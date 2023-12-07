@@ -1,0 +1,340 @@
+---
+title: "gg_basics"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+# Background
+In this session we will:
+* Learn the basic parts and syntax of a ggplot call
+* Understand how ggplot expects input data to be organized
+* Practice manipulating data structures to make plotting easier
+* Explore some of the basic design options that ggplot makes available to you
+
+Before we begin, make sure that you:
+* Have R and Rstudio installed (this code was written in R4.3.1 "Beagle Scouts")
+* Have a working directory set up for R
+* Understand the basics of how R creates and handles objects
+
+# Getting Started
+First, let's install and load in the packages we will need to use. We will be working with *ggplot* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
+
+However, there's a faster way to get all this done. The package *pacman* (PACkage MANagement tool) conveniently wraps library and package related functions and names them in an intuitive and consistent fashion to speed up workflow. Let's see it in action. First, we'll install *pacman* the old-fashoned way:
+```{r}
+install.packages("pacman")
+```
+
+Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
+```{r}
+pacman::p_load(tidyverse, RColorBrewer, cowplot, pokemon)
+```
+
+(By way of explanation here: The syntax *package::function* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
+
+# Viewing The Data
+Let's see what we're dealing with. Base R had a few options for looking at a data set directly, and those still work. For example, *View()* can be used to pop up the data as a table in a new tab.  
+```{r}
+View(pokemon)
+```
+
+Likewise, we can choose to print a few rows and columns to the screen:
+```{r}
+print(pokemon, n=10, width=6)
+```
+
+
+However, Tidyverse has given us some new tools that are worth trying out. The *glimpse()* function provided via package *dplyr* will show a transposed version of the data (columns run down the page, data runs across) along with the dimensions of the data and will try to show you as much of the data as possible:
+```{r}
+glimpse(pokemon)
+```
+This view is nice because it lets you see all the data types along with a snapshot of the first few rows, to get an idea of what the data set contains.
+
+## Viewing Data Subsets
+We can choose to access pieces of the data frame by name or by index. The names of the data are the column headers:
+```{r}
+names(pokemon)
+```
+
+With this information, we can call out a column of the data set by name. for example, the second column is named "pokemon" and contains the name of each pokemon type as character strings. Remember that the *$* operator is used to specify a named element within a data object in R:
+```{r}
+pokemon$pokemon
+```
+
+That's a lot of Pokemon. We can choose to look at a subset of these values, for example the first 10 entries (remember that the first index in R is 1, not 0!):
+```{r}
+pokemon$pokemon[1:10]
+```
+Or the last 10:
+```{r}
+pokemon$pokemon[940:949]
+```
+
+We can also treat the data frame as a matrix, using the name as a column identifier:
+```{r}
+pokemon[["pokemon"]][1:10]
+```
+
+or alternately, with row-column syntax:
+```{r}
+pokemon[,"pokemon"][1:10]
+```
+
+
+Oops. That didn't work. Why? The error code contains a clue:
+```{r}
+pokemon[,"pokemon"]
+```
+
+Since the row-column syntax returns a column (949 x 1), the easiest thing to do here is to *transpose* (flip) the Pokemon names so they have dimension (1 x 949), then take the first 10 entries:
+```{r}
+t(pokemon[,"pokemon"])[1:10]
+```
+Alternately alternately, we can use the fact that Pokemon names are in the second column:
+```{r}
+pokemon[[2]][1:10]
+t(pokemon[,2])[1:10]
+```
+
+We can also *pipe* these commands. Piping is a functionality provided by Tidyverse. The operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
+```{r}
+pokemon %>% .$pokemon[1:10]
+```
+That didn't work. Why?
+There are places where the integration between Tidyverse and base R isn't completely seamless; this is one of those places. We have to let Tidyverse keep calling the shots here to get the result we want. Instead of trying to index directly, we can use *slice()* from *dplyr* FIRST to index rows by their integer locations.
+```{r}
+pokemon %>% slice(1:10)
+pokemon %>% slice(1:10) %>% .$pokemon
+```
+
+
+As you can see, these calls are interchangeable with the ones above in base R. 
+
+You get the idea. There's a lot of ways to call pieces out of a data object, but we have to be a little careful when trying to mix and match across packages.
+
+
+# Plotting With ggplot
+*ggplot2* is the most-used package for producing data visualizations in R. It's tremendously powerful and flexible, with many, many ways to customize a plot. 
+
+The basics of a *ggplot2* call are simple. You need to provide, at minimum:
+* **Data** (the name of the data frame that contains the data for plotting)
+* **Aesthetics** (aes; what is being mapped onto the x and y axes, as well as what information you want to use to determine the attributes such as color, shape, size, etc. of plot elements)
+* **Geometry** (what kind of plot - scatter, line, bar, histogram...) 
+
+## Syntax
+Let's say that we want to begin with attack vs defense. These are both *quantitative* variables, so a scatterplot (where the x and y axis are both continuous numeric scales) is appropriate. In base R, the simplest way to make this plot is:
+```{r}
+plot(pokemon$attack, # x axis
+     pokemon$defense, # then y axis
+     type="p",       # "p" for points
+     main="Pokemon Attack vs Defense"
+     )
+```
+
+In *ggplot2*, we explicitly define the data, aesthetics (at a minimum the x and y), and geometry as:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x,y) 
+  geom_point() # creates a scatter plot
+```
+
+Inside the geometry, we can do things like change the color, shape, and size of all of the points. To see options for point shapes, check out
+```{r}
+?par
+?points
+```
+
+and for colors:
+```{r}
+?colors # you want colors {grDevices}
+colors(distinct = TRUE)
+```
+
+OK, now the plot. Try changing these options! 
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x,y) 
+  geom_point(shape="square", size=0.5, color="red") # creates a scatter plot
+```
+
+We can add informative aesthetics by using one or more of the *categorical variables* to divide the data into groups. For example, Pokemon type 1 is a factor with levels:
+```{r}
+unique(pokemon$type_1)
+```
+
+We can use this information to color each point according to the type of the Pokemon:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point()
+```
+
+We can add more than one informational aesthetic at a time. For example:
+```{r}
+ggplot(pokemon,  # the data
+       aes(attack, defense,  # x and y
+           color=type_1, # color points by type
+           shape=generation_id  # point shape indicates generation
+           )) +   
+  geom_point()
+```
+
+That didn't work! We tried to use a numeric variable (generation_id is a *double*, a non-integer numeric value) as a category! Also, as it turns out, not all of the entries have a generation assigned; we'll deal with that later.
+```{r}
+unique(pokemon$generation_id)
+```
+Fortunately, it's easy to convert a numeric variable to a categorical one - as long as the number of unique values is usably small.
+```{r}
+unique(as.factor(pokemon$generation_id))
+```
+
+If we tell *ggplot* to use generation ID *as a factor* (as if each unique value is the label for a category), now our plot will work.
+```{r}
+ggplot(pokemon,  # the data
+       aes(attack, defense,  # x and y
+           color=type_1, # color points by type
+           shape=as.factor(generation_id)  # point shape indicates generation
+           )) +   
+  geom_point()
+```
+
+The plot now is so busy that R is warning us about our design! Don't worry, we'll simplify this plot so it's usable later. But first, a few more design elements.
+
+## Themes
+We don't have to stick with the basic design. In *ggplot*, you can specify *themes* that provide different defaults for plot structural elements like the plot background and axes. Let's try a few!
+```{r}
+# Un-comment one theme at a time by removing the hash tag at the start of the line.
+# Remember that you can only have one theme at a time, 
+# so be sure to put a hash tag in front of any themes you aren't using!
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_void()
+#  theme_minimal()
+#  theme_nothing()
+#  theme_grey()
+#  theme_dark()
+#  theme_light()
+#  theme_classic()
+#  theme_bw()
+```
+
+## Theme Elements and Plot Labels
+We can control the size/position/color/etc of text, and change how different plot elements are labeled. Try changing some of these options!
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic() + # the classics never get old
+    theme(axis.text=element_text(size=14), 
+        axis.title=element_text(size=14, face="bold", color="blue"), 
+        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
+        legend.text=element_text(size=8),
+        legend.title=element_text(size=12)) +
+  labs(title="Attack vs defense", y="Defense", x="Attack", color="Type 1")
+```
+
+You can also remove text elements by making them blank:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic() + # the classics never get old
+    theme(axis.text=element_text(size=14), 
+        axis.title=element_text(size=14, face="bold"), 
+        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
+        legend.text=element_text(size=8),
+        legend.title=element_blank()   # removes the legend title
+        ) +
+  labs(title="Attack vs defense", y="Defense", x="Attack")
+```
+
+And remove elements entirely by setting *element.position = "none"*:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic() + # the classics never get old
+    theme(axis.text=element_text(size=14), 
+        axis.title=element_text(size=14, face="bold"), 
+        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
+        legend.text=element_text(size=14),
+        legend.position="none"             # no more legend!
+        ) +
+  labs(title="Attack vs defense", y="Defense", x="Attack")
+```
+
+
+
+# ggplot vs geom Elements
+One very important thing about ggplot is how aesthetics are inherited. So far, we have been specifying aesthetics in the call to *ggplot()*. When we do this, the aesthetics are *inherited* by all of the geometries - and we can specify more than one!
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic() # the classics never get old
+```
+As you can see, the smoothed line is the same color as the points.
+
+If we instead put the color aesthetic in the first geometry, this happens:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic() 
+```
+
+*geom_smooth* still inherits the aesthetics from the call to *ggplot* - it's just that we didn't supply a color aesthetic there! Now, only the *geom_point()* layer can use the information about generation ID.
+What if we put the color aesthetic into the *geom_smooth* function?
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth(aes(color=as.factor(generation_id))) +  # Produces a smoothed line showing data trends
+  theme_classic() 
+```
+
+Same thing. When we specify the color aesthetic in the "boss" call to *ggplot*, all of the geometries can use it (unless we tell them not to). If we specify an aesthetic in only one element, only that element gets to use it.
+
+*ggplot* will let you **overwrite** aesthetics, which comes in handy if you do have more than one layer of elements in a plot. For example, if we want to force all of the smoothed lines to be the same color, we can easily do so by giving the *geom_smooth* a local value for color. This will replace the global color scheme based on generation, only within the smoothed-lines layer.
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth(aes(group=1)) +  # Produces a smoothed line showing data trends
+  theme_classic() # the classics never get old
+```
+
+
+# Fine-Tuning the Aesthetics: RColorBrewer
+Since there are so many points, we can try making them a little bit transparent to see if that helps:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point(alpha=0.5) #alpha is a number between 0 and 1 that specifies opacity - try changing this!
+```
+
+We also don't have to use the default colors - in fact, we probably shouldn't.
+
+
+
+
+
+# Other Geometries
+
+
+
+
+
+
+# Resources
+https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
+
+
+
+
+
+
+
