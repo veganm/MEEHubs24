@@ -17,9 +17,6 @@ When you save the notebook, an HTML file containing the code and output will be 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
-# Resources
-https://github.com/schochastics/Rokemon
-https://cran.r-project.org/web/packages/pokemon/index.html
 
 
 # Getting started
@@ -40,3 +37,16 @@ pacman::p_load(tidyverse, cowplot, ggpubr, pokemon)
 
 
 # The Wider ggverse: devtools
+
+
+
+
+
+# Resources
+https://github.com/schochastics/Rokemon
+https://cran.r-project.org/web/packages/pokemon/index.html
+https://thatdatatho.com/r-resources-beginner-advanced/
+https://thatdatatho.com/7-tidyverse-tricks-for-getting-your-data-into-the-right-shape/
+https://thatdatatho.com/grammar-of-graphics-ggplot2/
+https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
+
