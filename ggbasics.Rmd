@@ -55,74 +55,16 @@ Likewise, we can choose to print a few rows and columns to the screen:
 print(pokemon, n=10, width=6)
 ```
 
-
 However, Tidyverse has given us some new tools that are worth trying out. The *glimpse()* function provided via package *dplyr* will show a transposed version of the data (columns run down the page, data runs across) along with the dimensions of the data and will try to show you as much of the data as possible:
 ```{r}
 glimpse(pokemon)
 ```
 This view is nice because it lets you see all the data types along with a snapshot of the first few rows, to get an idea of what the data set contains.
 
-## Viewing Data Subsets
-We can choose to access pieces of the data frame by name or by index. The names of the data are the column headers:
+The names of the data are the column headers:
 ```{r}
 names(pokemon)
 ```
-
-With this information, we can call out a column of the data set by name. for example, the second column is named "pokemon" and contains the name of each pokemon type as character strings. Remember that the *$* operator is used to specify a named element within a data object in R:
-```{r}
-pokemon$pokemon
-```
-
-That's a lot of Pokemon. We can choose to look at a subset of these values, for example the first 10 entries (remember that the first index in R is 1, not 0!):
-```{r}
-pokemon$pokemon[1:10]
-```
-Or the last 10:
-```{r}
-pokemon$pokemon[940:949]
-```
-
-We can also treat the data frame as a matrix, using the name as a column identifier:
-```{r}
-pokemon[["pokemon"]][1:10]
-```
-
-or alternately, with row-column syntax:
-```{r}
-pokemon[,"pokemon"][1:10]
-```
-
-
-Oops. That didn't work. Why? The error code contains a clue:
-```{r}
-pokemon[,"pokemon"]
-```
-
-Since the row-column syntax returns a column (949 x 1), the easiest thing to do here is to *transpose* (flip) the Pokemon names so they have dimension (1 x 949), then take the first 10 entries:
-```{r}
-t(pokemon[,"pokemon"])[1:10]
-```
-Alternately alternately, we can use the fact that Pokemon names are in the second column:
-```{r}
-pokemon[[2]][1:10]
-t(pokemon[,2])[1:10]
-```
-
-We can also *pipe* these commands. Piping is a functionality provided by Tidyverse. The operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
-```{r}
-pokemon %>% .$pokemon[1:10]
-```
-That didn't work. Why?
-There are places where the integration between Tidyverse and base R isn't completely seamless; this is one of those places. We have to let Tidyverse keep calling the shots here to get the result we want. Instead of trying to index directly, we can use *slice()* from *dplyr* FIRST to index rows by their integer locations.
-```{r}
-pokemon %>% slice(1:10)
-pokemon %>% slice(1:10) %>% .$pokemon
-```
-
-
-As you can see, these calls are interchangeable with the ones above in base R. 
-
-You get the idea. There's a lot of ways to call pieces out of a data object, but we have to be a little careful when trying to mix and match across packages.
 
 
 # Plotting With ggplot
