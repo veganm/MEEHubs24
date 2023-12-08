@@ -1,0 +1,196 @@
+---
+title: "Absolute Basics in R"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+
+# Getting Started
+At this point, you should:
+* Have R and RStudio installed (this code was written in R version 4.3.1)
+* Have set up a home directory for R
+* Know what CRAN is
+* Know what a "package" is in R and why we need to use them
+
+First, let's install and load in the packages we will need to use. We'll do most of our work today in base R, but we'll use a little bit of functionality from Tidyverse. The Tidyverse is a collection of R packages designed for use in data science, all of which work nicely together due to an underlying shared grammar and data structures.
+
+First, install the tidyverse:
+```{r}
+install.packages("tidyverse")
+```
+
+To use an installed library in R, you first have to load it into your workspace. The function that does this is called *library()*. It is best to do this at the start of a script or workflow.
+```{r}
+library(tidyverse)
+```
+
+Also, we need to get some data to work with. The dataset we will be working with today is a data frame of Pokemon data, available as package *pokemon* on CRAN.
+```{r}
+install.packages("pokemon")
+library(pokemon)
+```
+
+# Data Objects and Types in R
+Almost everything in R is some kind of *object*. A data object has a unique name (R is case sensitive - A1 and a1 are different objects) and contains a value or a set of values.
+
+## Objects
+Objects in R are assigned a value using "<-". Consider the example below:
+```{r}
+a1<-10
+A1<-5
+```
+
+Look at the Environment tab (it's over there ->). What do you see?
+What happens when you run the code below?
+```{r}
+a1<-1
+A1<-0.5
+```
+
+R won't give you a warning when you over-write an object that already exists, so be careful!
+
+## Vectors
+An object can contain more than one value. For example, you can *concatenate* numbers together using the *c()* function, creating a data vector:
+```{r}
+a2<-c(5, 10, 15, 20)
+```
+
+We can check that this object is, in fact, a vector:
+```{r}
+is.vector(a2)
+```
+What about the objects we assigned earlier, which contain a single numeric value?
+```{r}
+is.vector(a1)
+```
+As far as R is concerned, this is a vector object with a length of 1.
+```{r}
+length(a1)
+length(a2)
+```
+
+Values within a vector can be referred to by their *index* - the position that they occupy in the vector.
+```{r}
+a2[1]
+```
+Note that the first position in a R vector has index position 1, unlike some other languages that start indexing at 0:
+```{r}
+a2[0]
+```
+Vectors can contain any kind of data. The example above was a vector of numbers, but a vector can contain strings:
+```{r}
+a3<-c("one", "two", "three")
+```
+ 
+ or logicals:
+```{r}
+a4<-c(TRUE, TRUE, FALSE)
+```
+ 
+Look in the environment. Can you confirm the data type for each of these vectors?
+
+## Matrices
+
+## Data Frames and Tibbles
+
+
+# Functions in R
+
+
+# Viewing A Data Frame
+Let's see what we're dealing with. Base R has some options for looking at a data set directly. For example, *View()* can be used to pop up the data as a table in a new tab.  
+```{r}
+View(pokemon)
+```
+
+Likewise, we can choose to print a few rows and columns to the screen:
+```{r}
+print(pokemon, n=10, width=6)
+```
+
+
+## Viewing Data Subsets
+We can choose to access pieces of the data frame by name or by index. The names of the data are the column headers:
+```{r}
+names(pokemon)
+```
+
+With this information, we can call out a column of the data set by name. for example, the second column is named "pokemon" and contains the name of each pokemon type as character strings. The *$* operator is used to specify a named element within a data object in R:
+```{r}
+pokemon$pokemon
+```
+
+That's a lot of Pokemon. We can choose to look at a subset of these values, for example the first 10 entries (remember that the first index in R is 1, not 0!):
+```{r}
+pokemon$pokemon[1:10]
+```
+
+Or the last 10:
+```{r}
+pokemon$pokemon[940:949]
+```
+
+We can also treat the data frame as a matrix, using the name as a column identifier:
+```{r}
+pokemon[["pokemon"]][1:10]
+```
+
+or alternately, with row-column syntax:
+```{r}
+pokemon[,"pokemon"][1:10]
+```
+
+Oops. That didn't work. Why? The error code contains a clue:
+```{r}
+pokemon[,"pokemon"]
+```
+
+Since the row-column syntax returns a column (949 x 1), the easiest thing to do here is to *transpose* (flip) the Pokemon names so they have dimension (1 x 949), then take the first 10 entries:
+```{r}
+t(pokemon[,"pokemon"])[1:10]
+```
+
+Alternately alternately, we can use the fact that Pokemon names are in the second column:
+```{r}
+pokemon[[2]][1:10]
+t(pokemon[,2])[1:10]
+```
+
+We can also *pipe* these commands. Piping is a functionality provided by Tidyverse. The operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
+```{r}
+pokemon %>% .$pokemon[1:10]
+```
+
+That didn't work. Why?
+There are places where the integration between Tidyverse and base R isn't completely seamless; this is one of those places. We have to let Tidyverse keep calling the shots here to get the result we want. Instead of trying to index directly, we can use *slice()* from *dplyr* FIRST to index rows by their integer locations.
+```{r}
+pokemon %>% slice(1:10)
+pokemon %>% slice(1:10) %>% .$pokemon
+```
+
+
+As you can see, these calls are interchangeable with the ones above in base R. 
+
+You get the idea. There's a lot of ways to call pieces out of a data object, but we have to be a little careful when trying to mix and match across packages.
+
+
+
+
+
+
+# Resources
+https://rstudio-education.github.io/hopr/r-objects.html
