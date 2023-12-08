@@ -63,6 +63,23 @@ A1<-0.5
 
 R won't give you a warning when you over-write an object that already exists, so be careful!
 
+R can do any basic calculation:
+```{r}
+2+2
+2*2
+2/2
+2-2
+```
+
+If you have data objects in your workspace, R can also carry out operations on those objects:
+```{r}
+a1+A1
+a1*A1
+a1/A1
+a1-A1
+```
+
+
 ## Vectors
 An object can contain more than one value. For example, you can *concatenate* numbers together using the *c()* function, creating a data vector:
 ```{r}
@@ -103,7 +120,6 @@ a4<-c(TRUE, TRUE, FALSE)
  
 Look in the environment. Can you confirm the data type for each of these vectors?
 
-## Matrices
 
 ## Data Frames and Tibbles
 
@@ -116,6 +132,16 @@ Let's see what we're dealing with. Base R has some options for looking at a data
 ```{r}
 View(pokemon)
 ```
+
+We can see the STRucture of the data set in a compact format:
+```{r}
+str(pokemon)
+```
+The function *glimpse()* (provided by Tidyverse) is an improved version of this structural view:
+```{r}
+glimpse(pokemon)
+```
+
 
 Likewise, we can choose to print a few rows and columns to the screen:
 ```{r}
@@ -194,3 +220,4 @@ You get the idea. There's a lot of ways to call pieces out of a data object, but
 
 # Resources
 https://rstudio-education.github.io/hopr/r-objects.html
+https://riffomonas.org/minimalR/
