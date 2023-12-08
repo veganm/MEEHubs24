@@ -251,6 +251,11 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 ```
 
 
+## Labeling wih geom_text()
+We can even use different data sets within a single plot. Similar to aesthetics, the data are inherited within a *ggplot()* call, *unless you specify otherwise*.
+
+
+
 # Fine-Tuning the Aesthetics: RColorBrewer
 Since there are so many points, we can try making them a little bit transparent to see if that helps:
 ```{r}
@@ -273,10 +278,7 @@ We also don't have to use the default colors - in fact, we probably shouldn't.
 
 # Resources
 https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
-
-
-
-
-
-
+https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
+https://thatdatatho.com/grammar-of-graphics-ggplot2/
+https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
 
