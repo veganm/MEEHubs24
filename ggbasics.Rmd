@@ -122,6 +122,12 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
   geom_point()
 ```
 
+Since there are so many points, we can try making them a little bit transparent to see if that helps:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point(alpha=0.5) #alpha is a number between 0 and 1 that specifies opacity - try changing this!
+```
+
 We can add more than one informational aesthetic at a time. For example:
 ```{r}
 ggplot(pokemon,  # the data
@@ -302,14 +308,62 @@ We can even use different data sets within a single plot. Similar to aesthetics,
 
 
 
-# Fine-Tuning the Aesthetics: RColorBrewer
-Since there are so many points, we can try making them a little bit transparent to see if that helps:
+# Fine-Tuning the Aesthetics: Color Scales, Palettes, and RColorBrewer
+Let's see if there is any relationship between attack/defense components and speed.
 ```{r}
-ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point(alpha=0.5) #alpha is a number between 0 and 1 that specifies opacity - try changing this!
+pAttackVsSpeed <- ggplot(pokemon, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
+  geom_point()
+pAttackVsSpeed
 ```
 
-We also don't have to use the default colors - in fact, we probably shouldn't.
+
+Maybe, but it's hard to see like this. We don't have to use the default colors - in fact, we probably shouldn't.
+
+Since we are trying to color the points according to a numeric (continuous) variable, we need a *continuous color scale*. We can do this with a custom *color gradient*:
+```{r}
+pAttackVsSpeed + scale_color_gradient(low="blue", high="darkorange")
+```
+We can also set up a three-color gradient:
+```{r}
+pAttackVsSpeed +
+  scale_color_gradient2(low="blue", mid="violet", high="darkred")
+```
+
+
+By default, the  midpoint of the color scale is 0, but clearly that doesn't work here. Instead, we can set the midpoint (try a few different values!):
+```{r}
+pAttackVsSpeed +  
+  scale_color_gradient2(low="blue", mid="violet", high="darkred", midpoint=85)
+```
+
+Or we can specify a pre-made continuous color scale (here, the Viridis continuous scale, which is perceptually uniform in both colour and black-and-white display, is an easy option to ensure good perceptive properties of your visulizations):
+```{r}
+pAttackVsSpeed + scale_color_viridis_c()
+```
+We can take a given gradient and run it backwards:
+```{r}
+pAttackVsSpeed + scale_color_viridis_c(direction=-1)
+```
+Viridis_c presents eight scales as options:
+```{r}
+pAttackVsSpeed +
+  scale_color_viridis_c(option="turbo")
+#  scale_color_viridis_c(option="mako")
+#  scale_color_viridis_c(option="rocket")
+#  scale_color_viridis_c(option="cividis")
+#  scale_color_viridis_c(option="viridis")
+#  scale_color_viridis_c(option="plasma")
+#  scale_color_viridis_c(option="inferno")
+#  scale_color_viridis_c(option="magma")
+```
+
+
+
+
+# Testing Color Palettes: dichromat and colorblindr
+
+
+
 
 
 # Facets: facet_wrap() and facet_grid()
@@ -357,10 +411,73 @@ This is a very big plot! Click on "Show in new window" to get a closer look.
 
 
 # Other Geometries
+This section is basically a code bank for your use.
+
+## Histograms, Densities, and Violins
+Histograms are handy for showing distributions:
+```{r}
+ggplot(pokemon, aes(hp)) +
+  geom_histogram(color="white", # outline color
+                 fill="darkgreen" # fill color
+                 )+
+  theme_classic()
+```
+As always, aesthetics can be informational:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_histogram(color="white", # outline color
+                 binwidth=10)+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Densities also show distributions nicely:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_density(color="grey")+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+To show distributions side by side, a violin plot can be attractive:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
 
 
+If the number of points isn't too large, it is often recommended to over-plot the data:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+That didn't work. Geometries are deposited on the plot in order of appearance - if we want to see the data points AND have a color fill for the violins, we have to reverse the order:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  geom_jitter(width=0.2, size=0.5)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+Or we can remove the violin fill. Now we need to switch to *color* instead of *fill* so that the data points have the right colors:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin(fill=NA)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
 
 
+**EXERCISE:** Change the values on the plot options above to figure out what they do. (It can be helpful to copy a line of code, comment out the original, then start making changes to the copy - this lets you keep the old code for reference while you are breaking the options.)
+
+
+## Bar Plots
 
 
 # Resources
@@ -368,4 +485,5 @@ https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
 https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
 https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
-
+https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
+https://github.com/EmilHvitfeldt/r-color-palettes
