@@ -63,6 +63,31 @@ A1<-0.5
 
 R won't give you a warning when you over-write an object that already exists, so be careful!
 
+Note that when we carry out an operation using an object, the original object is not changed merely by the use of the operation:
+```{r}
+a1
+a1+1
+a1
+```
+
+But we can re-assign (over-write) an object whenever we feel like it:
+```{r}
+a1 <- a1+1
+a1
+```
+
+
+**EXERCISE: You try it!** In the empty code block below, create a named object and give it a value. When you are naming objects, remember that:
+* Object names are case sensitive (a1 and A1 are different objects)
+* Names can contain numbers and letters but CANNOT start with a number
+* You can use underscores (_), but other special characters (. / + $ etc) should be avoided
+* Avoid using function names as object names (we'll talk about functions later)
+```{r}
+
+```
+
+
+## Calculations
 R can do any basic calculation:
 ```{r}
 2+2
@@ -79,6 +104,11 @@ a1/A1
 a1-A1
 ```
 
+**EXERCISE: You try it!** In the empty code block below, carry out some simple operations using the object you named. Try using your object in combination with numeric values and with the other named objects in your environment.
+```{r}
+
+```
+
 
 ## Vectors
 An object can contain more than one value. For example, you can *concatenate* numbers together using the *c()* function, creating a data vector:
@@ -90,24 +120,28 @@ We can check that this object is, in fact, a vector:
 ```{r}
 is.vector(a2)
 ```
+
 What about the objects we assigned earlier, which contain a single numeric value?
 ```{r}
 is.vector(a1)
 ```
+
 As far as R is concerned, this is a vector object with a length of 1.
 ```{r}
 length(a1)
 length(a2)
 ```
 
-Values within a vector can be referred to by their *index* - the position that they occupy in the vector.
+Values within a vector can be referred to by their *index* - the position that they occupy in the vector. When we put a (integer!) number in brackets [] next to a named object, that will retrieve the value stored in the object at the index in the brackets.
 ```{r}
 a2[1]
 ```
+
 Note that the first position in a R vector has index position 1, unlike some other languages that start indexing at 0:
 ```{r}
 a2[0]
 ```
+
 Vectors can contain any kind of data. The example above was a vector of numbers, but a vector can contain strings:
 ```{r}
 a3<-c("one", "two", "three")
@@ -118,13 +152,109 @@ a3<-c("one", "two", "three")
 a4<-c(TRUE, TRUE, FALSE)
 ```
  
-Look in the environment. Can you confirm the data type for each of these vectors?
+Look in the environment. Can you confirm the data type and contents for each of these vectors?
+
+Vectors can be used in operations as well. By default, R carries out *element-wise* operations.
+```{r}
+a2
+a2+1
+```
+
+What happened?
+
+**EXERCISE: You try it!** In the empty code block below, create an operation that will multiply each element of the vector *a2* by 10.
+```{r}
+
+```
+
+What happens when you multiply the vector *a2* by itself? Create and run this operation.
+```{r}
+
+```
+
 
 
 ## Data Frames and Tibbles
 
 
 # Functions in R
+Most things that we will do in R will involve calls to functions. A function is a piece of code that runs only when it is called and that performs a task when you call it. Many functions take inputs (external data or user-defined parameters) and return an object. Function calls look like this:
+
+> FunctionName(input1, input2, input3) # as many inputs as this function needs
+
+The libraries you install from CRAN have their own functions, which you can call once the library is installed and loaded into your workspace.
+
+To give you the idea of how this works, here's a very simple function that takes no inputs:
+```{r}
+my_function <- function(){ #Create a function with the name my_function
+  print("Hello World!") # the code to be executed is within the brackets
+}
+```
+
+Once the function exists, it can be called:
+```{r}
+my_function()
+```
+
+How about a function that takes an input?
+```{r}
+addto3<-function(addend){
+  new_value<-addend+3 # The operation to be performed
+  return(new_value)  # the object to be returned when the function is called
+  }
+```
+
+When we call this function, we must provide a numeric value for "addend":
+```{r}
+addto3(4.5)
+```
+
+We can save the returned value as a new object:
+```{r}
+a5<-addto3(4.5)
+a5
+```
+
+R is smart enough to return an error if you try to pass a non-numeric value to a function that does a numeric operation:
+```{r}
+addto3("apple")
+```
+
+But there are plenty of operations that can be done on character strings. One common operation is *concatenation*, which is carried out here by the *paste()* function:
+```{r}
+underscore_it<-function(text1, text2){
+  new_value<-paste(text1, "_", text2, sep="") # The operation to be performed
+  return(new_value)  # the object to be returned when the function is called
+  } # note that new_value only exists inside the function - check your environment, it isn't there!
+```
+
+This function uses a text-based operation and can therefore accept strings:
+```{r}
+underscore_it("apple", "banana")
+```
+Fun fact - since this function knows that the inputs are supposed to be characters, if you pass it numeric values, it'll convert numbers into text and concatenate them anyway:
+```{r}
+underscore_it(2, 8)
+```
+
+
+**EXAMPLE: You try it!** What do you think will happen if you pass a numeric vector to *addto3()*? In the empty code block below, create a new numeric vector as a named object. Pass this vector to the *addto3()* function, saving the output as a new object. Did this work as you expected?
+```{r}
+
+```
+
+
+In the empty code block below, create a function that carries out some other simple one-step operation.
+```{r}
+
+```
+
+Call your new function and confirm that it works as expected.
+```{r}
+
+```
+
+
 
 
 # Viewing A Data Frame
@@ -215,6 +345,84 @@ You get the idea. There's a lot of ways to call pieces out of a data object, but
 
 
 
+# Plotting in Base R
+There are lots of plots provided as part of base R. While the ggverse gives us a lot more flexibility and power, these functions are still a great place to start. 
+
+## Two continuous variables: Scatterplot
+The most basic plotting command is, of course:
+```{r}
+?plot
+```
+
+which will produce a generic x-y plot. By default, this is a scatter plot. Let's give it some x and y data:
+```{r}
+plot(pokemon$height, pokemon$weight) # first data are x axis, second are y axis
+```
+
+We can also change the type of plot using the "type" argument. In the code block below, make sure only one type is un-commented at a time to explore different options:
+```{r}
+plot(pokemon$height, 
+     pokemon$weight,
+     col="red",  # declare color
+#     type="l"  # lines
+     type="p" # points
+#     type="b"  # both
+#     type="o"  # lines & points over-plotted
+     ) 
+```
+
+You can provide nicer labels for the axes and the plot title:
+```{r}
+plot(pokemon$height, 
+     pokemon$weight,
+     col="red",  # declare color
+     type="p", # points
+     main="Pokemon weight v height",
+     xlab="Height",
+     ylab="Weight"
+)
+```
+
+## One continuous variable: Histograms
+One continuous (numeric) variable can be plotted as a histogram:
+```{r}
+hist(pokemon$weight)
+```
+
+# Continuous (numeric) data by category: Boxplots
+If your data have categorical variables (with distinct, discrete values or levels), those can be used as categories for plotting. Here, pokemon have different types:
+```{r}
+unique(pokemon$type_1)
+```
+
+And these types can be used as a grouping:
+```{r}
+boxplot(weight~type_1, # formula. Weight data are grouped by the levels in type_1
+        data=pokemon,  # provide the name of the data object
+        xlab="Type",
+        ylab="Weight"
+        )
+```
+It's hard to see the x-axis labels on this plot. It would be easier if they were rotated. This is a little convoluted to do in base R; as we will see in the next workshop, this is much easier in ggplot.
+```{r}
+# First, save the boxplot as an object
+bp<-boxplot(weight~type_1, # formula. Weight data are grouped by the levels in type_1
+        data=pokemon,  # provide the name of the data object
+        xlab="Type",
+        ylab="Weight",
+        xaxt = "n" # don't print the x-axis labels on the plot yet
+        )  
+
+# The object contains the category names, which are the x-axis labels we want
+tick <- seq_along(bp$names)
+
+# Then we can use text() to put the labels on the axis
+axis(1, at = tick, labels = FALSE)
+text(tick, par("usr")[3] - 100, # This positions the new labels
+     bp$names,  # what are the labels
+     srt = 45,  # 45 degree text angle
+     xpd = TRUE)
+```
 
 
 
