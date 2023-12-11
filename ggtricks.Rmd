@@ -37,7 +37,63 @@ If you attended the prior workshops, you've already been introduced to Tidyverse
 * *gridExtra* allows for more complex plot gridding
 * *ggpubr* allows users to annotate plots, including overlay of statistical comparisons directly onto plots, and provides some user-friendly tools for manipulating ggplot formatting
 
-## Working with cowplot: plot_grid
+## Working with cowplot: themes and plot_grid
+This package includes some new theme options to explore:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_minimal_vgrid()
+#  theme_minimal_hgrid()
+#  theme_minimal_grid(12)
+#  theme_cowplot(12) # classic cowplot theme
+```
+
+Most of the functionality here is for creation of multipanel plots.
+```{r}
+# Save each ggplot as an object
+p1<- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic()
+p2<- ggplot(pokemon, aes(height, weight, color=type_1)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic()
+
+plot_grid(p1, p2,
+#          labels="AUTO",  # labels panels as "A", "B" etc
+          labels="auto",   # labels panels as "a", "b" etc
+          label_size = 12)
+```
+
+
+The grid components can be basically any plot object. 
+```{r}
+p3<-ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id) +
+  labs(color="Generation")
+
+plot_grid(p1, p3)
+```
+
+
+It may be wise to re-orient and/or re-size sub-plots:
+```{r}
+plot_grid(p1, p3, 
+          nrow=1, # orient plots in a single row
+          rel_widths = c(1.5,2), # change relative heights,
+#          ncol=1, # orient plots in a single column
+#          rel_heights = c(1,2), # change relative heights,
+          labels = "AUTO"
+          )
+```
+
+
+**EXERCISE: You try it!** Create a new ggplot object and grid together two or more plots.
+```{r}
+
+```
 
 
 
@@ -46,6 +102,7 @@ If you attended the prior workshops, you've already been introduced to Tidyverse
 
 
 ## Publication-quality plots with ggpubr
+
 
 
 # The Wider ggverse: devtools
@@ -61,4 +118,5 @@ https://thatdatatho.com/r-resources-beginner-advanced/
 https://thatdatatho.com/7-tidyverse-tricks-for-getting-your-data-into-the-right-shape/
 https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
+https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html
 
