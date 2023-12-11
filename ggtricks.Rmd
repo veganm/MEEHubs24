@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "gg_tricks"
 output: html_notebook
 ---
 
@@ -20,18 +20,30 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 
 
 # Getting started
+This workshop assumes that you:
+* Have R and Rstudio installed (this code was written in 4.3.1 "Beagle Scouts")
+* Have a working directory set up for R
+* Understand the basics of how R creates and handles objects
+* Know the basic parts of a call to *ggplot()*, including how to change aesthetics and geometries
+
+
 Before we begin, we'll need to install and load the packages we'll be working with from CRAN:
 ```{r}
-pacman::p_load(tidyverse, cowplot, ggpubr, pokemon)
+pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra)
 ```
 
+If you attended the prior workshops, you've already been introduced to Tidyverse and the pokemon data set. We'll also be working with some packages that add new functionality to the ggverse:
+* *cowplot* is an add-on to *ggplot* with features that help with creating publication-quality figures, including new themes and functions for assembly of compound multi-panel figures. 
+* *gridExtra* allows for more complex plot gridding
+* *ggpubr* allows users to annotate plots, including overlay of statistical comparisons directly onto plots, and provides some user-friendly tools for manipulating ggplot formatting
 
-# ggplot Syntax
+## Working with cowplot: plot_grid
 
 
-## Working with cowplot: facets and wraps
 
 ## Data manipulations with dplyr
+
+
 
 ## Publication-quality plots with ggpubr
 
