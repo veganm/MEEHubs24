@@ -29,8 +29,9 @@ Before we begin, make sure that you:
 * Have a working directory set up for R
 * Understand the basics of how R creates and handles objects
 
+
 # Getting Started
-First, let's install and load in the packages we will need to use. We will be working with *ggplot* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
+First, let's install and load in the packages we will need to use. We will be working with *ggplot()* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
 
 However, there's a faster way to get all this done. The package *pacman* (PACkage MANagement tool) conveniently wraps library and package related functions and names them in an intuitive and consistent fashion to speed up workflow. Let's see it in action. First, we'll install *pacman* the old-fashoned way:
 ```{r}
@@ -39,10 +40,10 @@ install.packages("pacman")
 
 Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
 ```{r}
-pacman::p_load(tidyverse, RColorBrewer, cowplot, pokemon)
+pacman::p_load(tidyverse, RColorBrewer, pokemon)
 ```
 
-(By way of explanation here: The syntax *package::function* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
+(By way of explanation here: The syntax *package::function()* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
 
 # Viewing The Data
 Let's see what we're dealing with. Base R had a few options for looking at a data set directly, and those still work. For example, *View()* can be used to pop up the data as a table in a new tab.  
@@ -74,6 +75,7 @@ The basics of a *ggplot2* call are simple. You need to provide, at minimum:
 * **Data** (the name of the data frame that contains the data for plotting)
 * **Aesthetics** (aes; what is being mapped onto the x and y axes, as well as what information you want to use to determine the attributes such as color, shape, size, etc. of plot elements)
 * **Geometry** (what kind of plot - scatter, line, bar, histogram...) 
+
 
 ## Syntax
 Let's say that we want to begin with attack vs defense. These are both *quantitative* variables, so a scatterplot (where the x and y axis are both continuous numeric scales) is appropriate. In base R, the simplest way to make this plot is:
@@ -134,19 +136,20 @@ That didn't work! We tried to use a numeric variable (generation_id is a *double
 ```{r}
 unique(pokemon$generation_id)
 ```
+
 Fortunately, it's easy to convert a numeric variable to a categorical one - as long as the number of unique values is usably small.
 ```{r}
 unique(as.factor(pokemon$generation_id))
 ```
 
-If we tell *ggplot* to use generation ID *as a factor* (as if each unique value is the label for a category), now our plot will work.
+If we tell *ggplot()* to use generation ID *as a factor* (as if each unique value is the label for a category), now our plot will work.
 ```{r}
 ggplot(pokemon,  # the data
        aes(attack, defense,  # x and y
            color=type_1, # color points by type
            shape=as.factor(generation_id)  # point shape indicates generation
            )) +   
-  geom_point()
+  geom_point(alpha=0.8) # remember that alpha in [0,1] controls point opacity
 ```
 
 The plot now is so busy that R is warning us about our design! Don't worry, we'll simplify this plot so it's usable later. But first, a few more design elements.
@@ -169,8 +172,26 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 #  theme_bw()
 ```
 
+For information on a given theme, consult its help file:
+```{r}
+?theme_classic
+```
+
+
+**EXERCISE: Now you try!** Use the empty code block below to make a new scatter plot of your own. Use a different set of x and y components - what other pair(s) of numeric data might be interesting? Try changing the shape, size, color, and/or transparency of the points, and try a few different themes. What options make the plot more or less legible?
+```{r}
+
+```
+
+
 ## Theme Elements and Plot Labels
-We can control the size/position/color/etc of text, and change how different plot elements are labeled. Try changing some of these options!
+We can control the size/position/color/etc of text, and change how different plot elements are labeled, with *theme()*. 
+```{r}
+?theme
+```
+
+
+Try changing some of these options!
 ```{r}
 ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
   geom_point() +
@@ -211,10 +232,29 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
   labs(title="Attack vs defense", y="Defense", x="Attack")
 ```
 
+**EXERCISE: Now you try!** Use the empty code block below to modify the themes and labels of your own plot. Play around with centering of different elements (using hjust and vjust), fonts, colors... 
+```{r}
+
+```
 
 
 # ggplot vs geom Elements
 One very important thing about ggplot is how aesthetics are inherited. So far, we have been specifying aesthetics in the call to *ggplot()*. When we do this, the aesthetics are *inherited* by all of the geometries - and we can specify more than one!
+
+Let's say we want to add lines to the scatter plot, to show the relationship between the attack and defense variables. The geometry *geom_line()* will add a line plot, using lines to connect adjacent points:
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_line() +  # Produces a line connecting data points
+  theme_classic() # the classics never get old
+```
+
+Technically that worked, but the plot is even more busy than before, and this doesn't do a very good job of showing the relationship between our x and y variables. There's a better choice for that job.
+```{r}
+?geom_smooth()
+```
+
+Let's see it in action:
 ```{r}
 ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
   geom_point() +
@@ -231,7 +271,7 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color)
   theme_classic() 
 ```
 
-*geom_smooth* still inherits the aesthetics from the call to *ggplot* - it's just that we didn't supply a color aesthetic there! Now, only the *geom_point()* layer can use the information about generation ID.
+*geom_smooth* still inherits the aesthetics from the call to *ggplot* - it's just that we didn't supply a color aesthetic there! Now only the *geom_point()* layer can use the information about generation ID.
 What if we put the color aesthetic into the *geom_smooth* function?
 ```{r}
 ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
@@ -251,6 +291,12 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 ```
 
 
+**EXERCISE: Now you try!** Use the empty code block below to modify the aesthetic inheritances in your own plot. What difference does it make when you move a color/shape aesthetic from the main call into the geometry call? What difference does it make when you have more than one geometry? 
+```{r}
+
+```
+
+
 ## Labeling wih geom_text()
 We can even use different data sets within a single plot. Similar to aesthetics, the data are inherited within a *ggplot()* call, *unless you specify otherwise*.
 
@@ -266,7 +312,48 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 We also don't have to use the default colors - in fact, we probably shouldn't.
 
 
+# Facets: facet_wrap() and facet_grid()
+Alternately, maybe we want to separate out different parts of the data onto separate plots. The function *facet_wrap()* lets us specify a single factor to use for separating the data. For example, if we want to plot Pokemon of different generations on different plots, we can do so:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id)
+```
+Note that *facet_wrap()* automatically converted the numeric variable *generation_id* into a factor. 
 
+In this call, *geom_smooth()* is applied to the data *within each grid panel*, but it hasn't inherited the color aesthetic. What happens if we move the color aesthetic into the "boss" call to *ggplot()*?
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id)
+```
+
+Now both geometries have inherited the same color aesthetic.
+
+If we want to separate Pokemon by type:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Notice that the smoothing function is upset with us here - there aren't enough points in some of these panels for smoothing to work properly.
+
+The function *facet_grid()* lets us separate the data by two factors simultaneously, making a grid. This function requires us to specify the data defining facet groups as *vars()*. Notice that we can specify which factor goes along rows vs. columns of the grid; if we don't specify, the first variable we provide will go down the rows and the second along the columns.
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  theme_light()+
+  facet_grid(rows=vars(type_1), cols=vars(type_2))
+```
+
+This is a very big plot! Click on "Show in new window" to get a closer look.
 
 
 # Other Geometries
