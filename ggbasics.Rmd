@@ -40,7 +40,7 @@ install.packages("pacman")
 
 Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
 ```{r}
-pacman::p_load(tidyverse, RColorBrewer, pokemon)
+pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes)
 ```
 
 (By way of explanation here: The syntax *package::function()* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
@@ -303,9 +303,6 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 ```
 
 
-## Labeling wih geom_text()
-We can even use different data sets within a single plot. Similar to aesthetics, the data are inherited within a *ggplot()* call, *unless you specify otherwise*.
-
 
 
 # Fine-Tuning the Aesthetics: Color Scales, Palettes, and RColorBrewer
@@ -360,7 +357,27 @@ pAttackVsSpeed +
 
 
 
-# Testing Color Palettes: dichromat and colorblindr
+# Testing Color Palettes
+As part of selecting or creating color palettes, it is important to make sure that your chosen color scheme will still work well when desaturated (black and white) and for viewers with different forms of color-blindness. Fortunately, there are ways of assessing this for color schemes and for specific figures in R.
+
+## Desaturating palettes with colorspace
+The *colorspace* package includes the function *desaturate()*, which can be used to test whether a palette will be distorted in black and white.
+
+## Collapse color distinctions with dichromat
+The **dichromat** package 
+
+## Simulating color blindness with colorblindr
+This package currently depends on the development versions of **cowplot** and **colorspace**, so let's install those first:
+```{r}
+remotes::install_github("wilkelab/cowplot")
+install.packages("colorspace", repos = "http://R-Forge.R-project.org")
+```
+
+Then we can install **colorblindr** from repository:
+```{r}
+remotes::install_github("clauswilke/colorblindr")
+```
+
 
 
 
@@ -408,6 +425,9 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color)
 ```
 
 This is a very big plot! Click on "Show in new window" to get a closer look.
+
+
+
 
 
 # Other Geometries
@@ -480,6 +500,11 @@ ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
 ## Bar Plots
 
 
+
+## Labeling wih geom_text()
+We can even use different data sets within a single plot. Similar to aesthetics, the data are inherited within a *ggplot()* call, *unless you specify otherwise*.
+
+
 # Resources
 https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
 https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
@@ -487,3 +512,4 @@ https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
 https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
 https://github.com/EmilHvitfeldt/r-color-palettes
+https://github.com/clauswilke/colorblindr
