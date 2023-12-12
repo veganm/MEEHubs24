@@ -39,12 +39,12 @@ Before we begin, make sure that you:
 First, let's install and load in the packages we will need to use. We will be working with *ggplot()* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
 
 However, there's a faster way to get all this done. The package *pacman* (PACkage MANagement tool) conveniently wraps library and package related functions and names them in an intuitive and consistent fashion to speed up workflow. Let's see it in action. First, we'll install *pacman* the old-fashoned way:
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 install.packages("pacman")
 ```
 
 Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
-```{r, echo=FALSE, message=FALSE}
+```{r, echo=FALSE, message=FALSE, results='hide'}
 pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes, cowplot)
 ```
 
