@@ -17,6 +17,8 @@ When you save the notebook, an HTML file containing the code and output will be 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
+
+**************************************************************************************************************************
 # Background
 In this session we will:
 * Learn the basic parts and syntax of a ggplot call
@@ -25,11 +27,14 @@ In this session we will:
 * Explore some of the basic design options that ggplot makes available to you
 
 Before we begin, make sure that you:
-* Have R and Rstudio installed (this code was written in R4.3.1 "Beagle Scouts")
+* Have R and Rstudio installed (this code was written in 4.3.1 "Beagle Scouts" and 4.3.2 "Eye Holes")
 * Have a working directory set up for R
+* Know what a package is and how to install packages from CRAN
 * Understand the basics of how R creates and handles objects
+* Know what a function is in R
+* Know how to retrieve information from a data frame by name and index
 
-
+**************************************************************************************************************************
 # Getting Started
 First, let's install and load in the packages we will need to use. We will be working with *ggplot()* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
 
@@ -45,6 +50,8 @@ pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes)
 
 (By way of explanation here: The syntax *package::function()* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
 
+
+**************************************************************************************************************************
 # Viewing The Data
 Let's see what we're dealing with. Base R had a few options for looking at a data set directly, and those still work. For example, *View()* can be used to pop up the data as a table in a new tab.  
 ```{r}
@@ -68,6 +75,8 @@ names(pokemon)
 ```
 
 
+
+**************************************************************************************************************************
 # Plotting With ggplot
 *ggplot2* is the most-used package for producing data visualizations in R. It's tremendously powerful and flexible, with many, many ways to customize a plot. 
 
@@ -244,6 +253,55 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 ```
 
 
+
+
+**************************************************************************************************************************
+# Facets: facet_wrap() and facet_grid()
+Alternately, maybe we want to separate out different parts of the data onto separate plots. The function *facet_wrap()* lets us specify a single factor to use for separating the data. For example, if we want to plot Pokemon of different generations on different plots, we can do so:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id)
+```
+Note that *facet_wrap()* automatically converted the numeric variable *generation_id* into a factor. 
+
+In this call, *geom_smooth()* is applied to the data *within each grid panel*, but it hasn't inherited the color aesthetic. What happens if we move the color aesthetic into the "boss" call to *ggplot()*?
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id)
+```
+
+Now both geometries have inherited the same color aesthetic.
+
+If we want to separate Pokemon by type:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Notice that the smoothing function is upset with us here - there aren't enough points in some of these panels for smoothing to work properly.
+
+The function *facet_grid()* lets us separate the data by two factors simultaneously, making a grid. This function requires us to specify the data defining facet groups as *vars()*. Notice that we can specify which factor goes along rows vs. columns of the grid; if we don't specify, the first variable we provide will go down the rows and the second along the columns.
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  theme_light()+
+  facet_grid(rows=vars(type_1), cols=vars(type_2))
+```
+
+This is a very big plot! Click on "Show in new window" to get a closer look.
+
+
+
+**************************************************************************************************************************
 # ggplot vs geom Elements
 One very important thing about ggplot is how aesthetics are inherited. So far, we have been specifying aesthetics in the call to *ggplot()*. When we do this, the aesthetics are *inherited* by all of the geometries - and we can specify more than one!
 
@@ -304,9 +362,9 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 
 
 
-
+**************************************************************************************************************************
 # Fine-Tuning the Aesthetics: Color Scales, Palettes, and RColorBrewer
-Let's see if there is any relationship between attack/defense components and speed.
+Let's see if there is any relationship between attack/defense components and speed. Notice that we are saving the plot as an object.
 ```{r}
 pAttackVsSpeed <- ggplot(pokemon, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
   geom_point()
@@ -316,7 +374,8 @@ pAttackVsSpeed
 
 Maybe, but it's hard to see like this. We don't have to use the default colors - in fact, we probably shouldn't.
 
-Since we are trying to color the points according to a numeric (continuous) variable, we need a *continuous color scale*. We can do this with a custom *color gradient*:
+Since we are trying to color the points according to a numeric (continuous) variable, we need a *continuous color scale*. We can do this with a custom *color gradient*. 
+We'll start with the plot we just saved; once we have saved a plot, we can add new options to it exactly as if it were one continuous *ggplot()* call.
 ```{r}
 pAttackVsSpeed + scale_color_gradient(low="blue", high="darkorange")
 ```
@@ -356,12 +415,12 @@ pAttackVsSpeed +
 
 
 
-
+**************************************************************************************************************************
 # Testing Color Palettes
 As part of selecting or creating color palettes, it is important to make sure that your chosen color scheme will still work well when desaturated (black and white) and for viewers with different forms of color-blindness. Fortunately, there are ways of assessing this for color schemes and for specific figures in R.
 
 ## Desaturating palettes with colorspace
-The *colorspace* package includes the function *desaturate()*, which can be used to test whether a palette will be distorted in black and white.
+The **colorspace** package includes the function *desaturate()*, which can be used to test whether a palette will be distorted in black and white.
 
 ## Collapse color distinctions with dichromat
 The **dichromat** package 
@@ -378,58 +437,42 @@ Then we can install **colorblindr** from repository:
 remotes::install_github("clauswilke/colorblindr")
 ```
 
-
-
-
-
-
-# Facets: facet_wrap() and facet_grid()
-Alternately, maybe we want to separate out different parts of the data onto separate plots. The function *facet_wrap()* lets us specify a single factor to use for separating the data. For example, if we want to plot Pokemon of different generations on different plots, we can do so:
+Once the package is installed, load it in:
 ```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y) 
-  geom_point(aes(color=as.factor(generation_id))) +
-  geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
-  facet_wrap(~generation_id)
-```
-Note that *facet_wrap()* automatically converted the numeric variable *generation_id* into a factor. 
-
-In this call, *geom_smooth()* is applied to the data *within each grid panel*, but it hasn't inherited the color aesthetic. What happens if we move the color aesthetic into the "boss" call to *ggplot()*?
-```{r}
-ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
-  facet_wrap(~generation_id)
+library(colorblindr)
 ```
 
-Now both geometries have inherited the same color aesthetic.
-
-If we want to separate Pokemon by type:
+This package lets us look at figures in various color-deficiency situations. Let's use the plot we saved earlier:
 ```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
-  geom_point(aes(color=as.factor(generation_id))) +
-  geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
-  facet_wrap(~type_1)
+pAttackVsSpeed
 ```
 
-Notice that the smoothing function is upset with us here - there aren't enough points in some of these panels for smoothing to work properly.
-
-The function *facet_grid()* lets us separate the data by two factors simultaneously, making a grid. This function requires us to specify the data defining facet groups as *vars()*. Notice that we can specify which factor goes along rows vs. columns of the grid; if we don't specify, the first variable we provide will go down the rows and the second along the columns.
+How does the default palette (blues) look to color-blind eyes?
 ```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
-  geom_point(aes(color=as.factor(generation_id))) +
-  theme_light()+
-  facet_grid(rows=vars(type_1), cols=vars(type_2))
+cvd_grid(pAttackVsSpeed)
 ```
 
-This is a very big plot! Click on "Show in new window" to get a closer look.
+With our custom gradient?
+```{r}
+cvd_grid(pAttackVsSpeed + scale_color_gradient2(low="blue", mid="violet", high="darkred", midpoint=85))
+```
+
+What about if we use the Viridis default scale?
+```{r}
+cvd_grid(pAttackVsSpeed+scale_color_viridis_c())
+```
+
+
+**EXERCISE: You try it!** Use the color tools explained here to assess the performance of different color scales of your choice. Try to find scales that work badly.
+```{r}
+
+```
 
 
 
 
 
+**************************************************************************************************************************
 # Other Geometries
 This section is basically a code bank for your use.
 
