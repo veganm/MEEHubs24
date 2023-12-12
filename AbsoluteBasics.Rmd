@@ -19,6 +19,8 @@ The preview shows you a rendered HTML copy of the contents of the editor. Conseq
 
 
 
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
 # Getting Started
 At this point, you should:
 * Have R and RStudio installed (this code was written in R version 4.3.1)
@@ -39,14 +41,18 @@ library(tidyverse)
 ```
 
 Also, we need to get some data to work with. The dataset we will be working with today is a data frame of Pokemon data, available as package *pokemon* on CRAN.
-```{r}
+```{r, message=FALSE, echo=FALSE, results='hide'}
+# we are asking the code chunk to be quiet
 install.packages("pokemon")
 library(pokemon)
 ```
 
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
 # Data Objects and Types in R
 Almost everything in R is some kind of *object*. A data object has a unique name (R is case sensitive - A1 and a1 are different objects) and contains a value or a set of values.
 
+*******************************************************************************************************************************************
 ## Objects
 Objects in R are assigned a value using "<-". Consider the example below:
 ```{r}
@@ -87,6 +93,8 @@ a1
 ```
 
 
+
+*******************************************************************************************************************************************
 ## Calculations
 R can do any basic calculation:
 ```{r}
@@ -110,6 +118,9 @@ a1-A1
 ```
 
 
+
+
+*******************************************************************************************************************************************
 ## Vectors
 An object can contain more than one value. For example, you can *concatenate* numbers together using the *c()* function, creating a data vector:
 ```{r}
@@ -174,9 +185,8 @@ What happens when you multiply the vector *a2* by itself? Create and run this op
 
 
 
-## Data Frames and Tibbles
-
-
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
 # Functions in R
 Most things that we will do in R will involve calls to functions. A function is a piece of code that runs only when it is called and that performs a task when you call it. Many functions take inputs (external data or user-defined parameters) and return an object. Function calls look like this:
 
@@ -256,8 +266,78 @@ Call your new function and confirm that it works as expected.
 
 
 
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
+## Data Frames and Tibbles
+Many of the data sets we work with can be described (or made to be) a kind of table, where each row represents a different entity and each column represents a different aspect of that entity. Let's take a simple example. Here we are going to build our own data set by entering the data manually as a series of vectors.
 
-# Viewing A Data Frame
+In R, we will build this data object as a *tibble*. You can think of a tibble as a kind of lazy data frame; when you make a tibble, it doesn't try to do much to make your data make sense, or to repair your data names. This is a good thing; you get to make more decisions about the contents of your own data. It does mean you have to be a bit careful about how you build.
+
+We can make a tibble out of almost anything. If we're lazy and don't name arguments, they get named with the expression used:
+```{r}
+tibble(a2, a2+10)
+```
+
+If one of your inputs is a vector of length 1, it will be recycled as many times as needed to match the length of the tibble:
+```{r}
+tibble(a2, a1)
+```
+
+But tibbles are lazy - a vector of length 2 won't be recycled, even if it could be.
+```{r}
+a22<-c(2,2)
+tibble(a2, a22)
+```
+
+
+Tibbles can contain different data types, as long as the number of rows is compatible. Each named column will have its own type.
+```{r}
+mydata<-tibble(animal=c("dog", "cat", "mouse", "horse"),
+               kg=c(30, 4.5, 0.025, 550),
+               body_len=c(75, 46, 10, 2400)
+)
+mydata
+```
+
+This object has a shape and size:
+```{r}
+dim(mydata) # rows, then columns
+```
+and names:
+```{r}
+names(mydata)
+```
+Tidyverse makes it very easy to manipulate data in the form of tibbles. We can mutate (transform) existing columns and append the results to the tibble. (**For each of the following:** How big do you expect the resulting tibble to be? How many rows and columns?)
+```{r}
+mydata<-mydata %>%
+  mutate(lbs=2.2046*kg)
+mydata
+```
+
+We can select only specific columns:
+```{r}
+mydata %>%
+  select(animal, body_len)
+```
+
+or a range of columns:
+```{r}
+mydata %>%
+  select(animal:body_len)
+```
+
+We can filter a tibble, retaining only the rows that satisfy a given condition:
+```{r}
+mydata %>%
+  filter(kg>25)
+```
+
+
+
+*******************************************************************************************************************************************
+## Exploring Your Data
+For the rest of these exercises, we will use the Pokemon data set that we installed from CRAN.
+
 Let's see what we're dealing with. Base R has some options for looking at a data set directly. For example, *View()* can be used to pop up the data as a table in a new tab.  
 ```{r}
 View(pokemon)
