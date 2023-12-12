@@ -39,13 +39,13 @@ Before we begin, make sure that you:
 First, let's install and load in the packages we will need to use. We will be working with *ggplot()* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set. All of these are available on CRAN (the official R project repository) and can be installed directly using *install.packages()* and *library()* from base R.
 
 However, there's a faster way to get all this done. The package *pacman* (PACkage MANagement tool) conveniently wraps library and package related functions and names them in an intuitive and consistent fashion to speed up workflow. Let's see it in action. First, we'll install *pacman* the old-fashoned way:
-```{r}
+```{r, echo=FALSE, message=FALSE}
 install.packages("pacman")
 ```
 
 Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
-```{r}
-pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes)
+```{r, echo=FALSE, message=FALSE}
+pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes, cowplot)
 ```
 
 (By way of explanation here: The syntax *package::function()* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
@@ -363,8 +363,8 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 
 
 **************************************************************************************************************************
-# Fine-Tuning the Aesthetics: Color Scales, Palettes, and RColorBrewer
-Let's see if there is any relationship between attack/defense components and speed. Notice that we are saving the plot as an object.
+# Fine-Tuning the Aesthetics: Color Scales and Palettes
+Let's see if there is any relationship between attack/defense components and speed. Notice that we are saving the plot as an object now; see if you can find it in your environment. What is contained in a *ggplot* object? 
 ```{r}
 pAttackVsSpeed <- ggplot(pokemon, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
   geom_point()
@@ -413,27 +413,155 @@ pAttackVsSpeed +
 #  scale_color_viridis_c(option="magma")
 ```
 
+## Custom Color Scales with ColorBrewer
+ColorBrewer provides discrete color schemes. The *brewer* palettes can be found on the help page:
+```{r}
+?scale_color_brewer
+```
+
+The *distiller* scales interpolate these palettes to a continuous scale (note that this is not guaranteed to look good!)
+```{r}
+pAttackVsSpeed + scale_color_distiller()
+pAttackVsSpeed + scale_color_distiller(palette="BrBG")
+pAttackVsSpeed + scale_color_distiller(palette="Set3")
+pAttackVsSpeed + scale_color_distiller(palette="PuBuGn")
+```
+
+
+Since these scales are designed to be discrete, let's generate a plot that uses discrete (categorical) data. For example, we might ask how egg types are distributed over different types of Pokemon:
+```{r}
+ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar() +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+```
+The raw counts are hard to read. We could put the counts next to each other:
+```{r}
+pEggDodge<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="dodge") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggDodge
+```
+
+but this plot is sprawling. Let's make a stacked plot of proportions instead:
+```{r}
+pEggStack<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="fill") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggStack
+```
+
+Much better, except that the colors are fairly unpleasant. Let's use ColorBrewer to access some new options.
+```{r}
+pEggStack + scale_color_brewer()
+```
+
+Why didn't that work?
+```{r}
+pEggStack + scale_fill_brewer(palette="Dark2")
+```
+
+Now we got our colors, but the data have too many levels! What do?
+
+Well, for one, we can define our own color palette. There are 15 egg groups, so we need 15 colors. We can pick them manually (by name or by hex code) or generate them from a pre-existing palette:
+```{r}
+?palettes
+```
+
+```{r}
+colvec<-c("red", "orangered2", "orange3", "orange2", "yellow2", 
+          "olivedrab1", "lightgreen", "green", "green4", "mediumturquoise",
+          "paleturquoise2", "dodgerblue", "dodgerblue4", "mediumpurple", "mediumvioletred")
+colvec_rainbow<-rainbow(length(unique(pokemon$egg_group_1)), s=1, v=1)          # When you need a number of items to match data dimensions,
+colvec_hcl<-hcl.colors(length(unique(pokemon$egg_group_1)), palette="viridis")  # it's best to ask the data directly!
+colvec_heat<-heat.colors(length(unique(pokemon$egg_group_1)))                 
+```
+
+Now we can use any of these to fill. This is a big plot; open it in a new window. 
+```{r}
+p1<-pEggStack + scale_fill_manual(values=colvec, guide=guide_legend(ncol=2))
+p2<-pEggStack + scale_fill_manual(values=colvec_rainbow, guide=guide_legend(ncol=2))
+p3<-pEggStack + scale_fill_manual(values=colvec_hcl, guide=guide_legend(ncol=2))
+p4<-pEggStack + scale_fill_manual(values=colvec_heat, guide=guide_legend(ncol=2))
+p5<-plot_grid(p1, p2, p3, p4, ncol=2)
+p5
+```
+
+**EXERCISE:** Build a palette and use it to color one of the plots that we have saved as objects so far.
+```{r}
+
+```
+
 
 
 **************************************************************************************************************************
 # Testing Color Palettes
 As part of selecting or creating color palettes, it is important to make sure that your chosen color scheme will still work well when desaturated (black and white) and for viewers with different forms of color-blindness. Fortunately, there are ways of assessing this for color schemes and for specific figures in R.
 
-## Desaturating palettes with colorspace
-The **colorspace** package includes the function *desaturate()*, which can be used to test whether a palette will be distorted in black and white.
+## Palettes and manipulations with colorspace
+The **colorspace** package is designed as a broad toolbox for selecting, creating, and manipulating color palettes. The package ships with a wide range of pre-defined palettes for you to use (including many of the ColorBrewer scales), which can be glimpsed with the *hcl_palettes()* function:
+```{r}
+hcl_palettes(plot = TRUE)
+```
 
-## Collapse color distinctions with dichromat
-The **dichromat** package 
+A suitable vector of colors can be easily computed by specifying the desired number of colors and the palette name:
+```{r}
+q8 <- qualitative_hcl(8, palette = "Dark 3")
+q8
+```
+There are onboard functions for demoing palettes and exploring their parameters:
+```{r}
+demoplot(q8, "bar")
+hclplot(q8)
+specplot(q8, type = "o")
+```
+
+The functions for sequential and diverging palettes are analogous. Here we can see how differently these palettes are shaped in, well, colorspace:
+```{r}
+s8 <- sequential_hcl(8, palette = "Greens 3")
+hclplot(s8)
+d8 <- diverging_hcl(8, palette = "Blue-Red")
+hclplot(d8)
+```
+
+Hue/chroma/luminance parameters can be modified, thus allowing for easy customization of each palette. 
+```{r}
+specplot(lighten(q8, amount=0.5, space="combined"))
+specplot(darken(q8, amount=0.5, space="combined"))
+```
+
+
+Importantly, the **colorspace** package includes the function *desaturate()*, which can be used to partially or completely desaturate a color scheme.
+```{r}
+hclplot(desaturate(q8, amount=0.5))
+specplot(desaturate(q8, amount=0.5))
+```
+
+Completely desaturate a color scheme to see how it will look in black and white:
+```{r}
+specplot(desaturate(q8, amount=1))
+```
+We can use these functions for color schemes not provided by the package:
+```{r}
+specplot(scales::viridis_pal()(8))
+specplot(desaturate((scales::viridis_pal()(8)), amount=1))
+```
+
+**EXERCISE:** Use these tools to interrogate some of the palettes we have just seen. Make your own palette and do the same.
+```{r}
+
+```
+
+
 
 ## Simulating color blindness with colorblindr
 This package currently depends on the development versions of **cowplot** and **colorspace**, so let's install those first:
-```{r}
+```{r, message=FALSE, echo=FALSE}
 remotes::install_github("wilkelab/cowplot")
 install.packages("colorspace", repos = "http://R-Forge.R-project.org")
 ```
 
 Then we can install **colorblindr** from repository:
-```{r}
+```{r, message=FALSE, echo=FALSE}
 remotes::install_github("clauswilke/colorblindr")
 ```
 
@@ -556,3 +684,5 @@ https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
 https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
 https://github.com/EmilHvitfeldt/r-color-palettes
 https://github.com/clauswilke/colorblindr
+https://cran.r-project.org/web/packages/colorspace/vignettes/colorspace.html
+
