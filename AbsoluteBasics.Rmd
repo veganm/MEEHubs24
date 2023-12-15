@@ -307,14 +307,41 @@ and names:
 ```{r}
 names(mydata)
 ```
-Tidyverse makes it very easy to manipulate data in the form of tibbles. We can mutate (transform) existing columns and append the results to the tibble. (**For each of the following:** How big do you expect the resulting tibble to be? How many rows and columns?)
+
+*******************************************************************************************************************************************
+## Intro to data manipulation in Tidyverse
+Tidyverse makes it very easy to manipulate data in the form of tibbles. (**For each of the following:** How big do you expect the resulting tibble to be? How many rows and columns?)
+
+First, we can mutate (transform) existing columns and append the results to the tibble. 
 ```{r}
 mydata<-mydata %>%
   mutate(lbs=2.2046*kg)
 mydata
 ```
 
-We can select only specific columns:
+
+*******************************************************************************************************************************************
+Wait - what did we do there? That's called a **pipe**, and it comes from a Tidyverse package called **magrittr**. The pipe is a great way to keep your R code clean, readable, and therefore maintanable. Consider the following example. Can you tell what this nest of function calls is doing?
+```{r}
+round(cos(exp(sin(log10(sqrt(25))))), 2)
+```
+
+It's a mess. If instead the functions are called through a series of pipes, it's much easier to see what's happening:
+```{r}
+sqrt(25) %>%   # Take the square root of 25...
+  log10() %>%
+  sin() %>%
+  exp() %>%
+  cos() %>%
+  round(2)
+```
+
+What the pipe is doing is putting the result from the left-hand side (or in our case from above) and put it into the right hand side (or in our case into the code below). When we write out code this way, it's much easier to see what is happening, as well as to fix any mistakes.
+*******************************************************************************************************************************************
+
+
+
+But let's get back to parsing our data. We can select only specific columns:
 ```{r}
 mydata %>%
   select(animal, body_len)
@@ -473,6 +500,7 @@ Now we've processed the data a little bit, but it's still hard to see what these
 
 There are lots of plots provided as part of base R. While the ggverse gives us a lot more flexibility and power, these functions are still a great place to start. 
 
+*******************************************************************************************************************************************
 ## Two continuous variables: Scatterplot
 The most basic plotting command is, of course:
 ```{r}
@@ -511,6 +539,7 @@ plot(pokemon$height,
 )
 ```
 
+*******************************************************************************************************************************************
 ## One continuous variable: Histograms
 One continuous (numeric) variable can be plotted as a histogram:
 ```{r}
@@ -531,7 +560,7 @@ Honestly it might just be better to plot the log-transformed data:
 hist(log10(pokemon$weight))
 ```
 
-
+*******************************************************************************************************************************************
 ## Two continuous variables: Barplot
 Remember that we summarized our data earlier. Let's take a closer look at those summaries and see if we can observe any differences between groups. One easy way to do this is with a barplot:
 ```{r}
@@ -593,7 +622,7 @@ Uh-oh. What happened?
 
 **EXERCISE:** Change the positions of the labels in the plot above to make it look better. Why do we need to change the position for this plot?
 
-
+*******************************************************************************************************************************************
 # Continuous (numeric) data by category: Boxplots
 If your data have categorical variables (with distinct, discrete values or levels), those can be used as categories for plotting. We already know that pokemon have different types:
 ```{r}
@@ -679,6 +708,9 @@ text(tick, par("usr")[3] - 1.5, # This positions the new labels
 ```
 
 
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
 # Resources
 https://rstudio-education.github.io/hopr/r-objects.html
 https://riffomonas.org/minimalR/
+https://thatdatatho.com/tutorial-about-magrittrs-pipe-operator-and-placeholders/
