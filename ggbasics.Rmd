@@ -677,10 +677,12 @@ We can even use different data sets within a single plot. Similar to aesthetics,
 
 
 # Resources
+https://www.kaggle.com/code/kitman0804/visualising-pokemon-stats-with-ggplot
 https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
 https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
 https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
+https://thatdatatho.com/learning-the-tidyverse-basic-dplyr/
 https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
 https://github.com/EmilHvitfeldt/r-color-palettes
 https://github.com/clauswilke/colorblindr
