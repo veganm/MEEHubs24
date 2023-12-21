@@ -97,7 +97,69 @@ plot_grid(p1, p3,
 
 
 
-## Data manipulations with dplyr
+*******************************************************************************************************************************************
+# Intro to data manipulation in Tidyverse
+Before we go any farther, we need to know how to manipulate data within tibbles. Tidyverse makes it very easy to do this. 
+
+(**For each of the following:** How big do you expect the resulting tibble to be? How many rows and columns? Is that what you get? This is debugging 101 - if you know the properties of the object you are trying to produce, you can use that knowledge to figure out when something you've written is not working as intended.)
+
+First, we can mutate (transform) existing columns and append the results to the tibble. First, let's see what the function does and how to call it:
+```{r}
+?mutate
+```
+
+
+Then we can use it:
+```{r}
+mydata<-mydata %>%
+  mutate(lbs=2.2046*kg)
+mydata
+```
+
+
+*******************************************************************************************************************************************
+Wait - what did we do there? That's called a **pipe**, and it comes from a Tidyverse package called **magrittr**. 
+
+The pipe operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. The object from the left-hand side of the pipe therefore becomes the data for the command(s) on the right-hand side.
+
+The pipe is a great way to keep your R code clean, readable, and therefore maintanable. Consider the following example. Can you tell what this nest of function calls is doing?
+```{r}
+round(cos(exp(sin(log10(sqrt(25))))), 2)
+```
+
+It's a mess. If instead the functions are called through a series of pipes, it's much easier to see what's happening:
+```{r}
+sqrt(25) %>%   # Take the square root of 25...
+  log10() %>%  # Find its base-10 log...
+  sin() %>%    # Find the sine of the result...
+  exp() %>%    # Calculate e^(that result)...
+  cos() %>%    # Find the cosine of THAT result...
+  round(2)     # And round it to two decimal places.
+```
+
+What the pipe is doing is putting the result from the left-hand side (or in our case from above) and put it into the right hand side (or in our case into the code below). When we write out code this way, it's much easier to see what is happening, as well as to fix any mistakes.
+*******************************************************************************************************************************************
+
+But let's get back to parsing our data. We can select only specific columns:
+```{r}
+mydata %>%
+  select(animal, body_len)
+```
+
+or a range of columns:
+```{r}
+mydata %>%
+  select(animal:body_len)
+```
+
+We can filter a tibble, retaining only the rows that satisfy a given condition:
+```{r}
+mydata %>%
+  filter(kg>25)
+```
+
+There's more functionality available here (lots more!) but these are some of the most useful basic operations to have when handling tibbles.
+
 
 
 
