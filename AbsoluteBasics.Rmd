@@ -87,7 +87,7 @@ a1
 * Object names are case sensitive (a1 and A1 are different objects)
 * Names can contain numbers and letters but CANNOT start with a number
 * You can use underscores (_), but other special characters (. / + $ etc) should be avoided
-* Avoid using function names as object names (we'll talk about functions later)
+* Avoid using function names as object names (we'll talk about functions later). This will be obvious because R will bring up the function name as you are typing - it assumes you are trying to use the function, and it is trying to be helpful.
 ```{r}
 
 ```
@@ -96,16 +96,19 @@ a1
 
 *******************************************************************************************************************************************
 ## Calculations
+
 R can do any basic calculation:
 ```{r}
-2+2
-2*2
-2/2
-2-2
+2+2 # sum
+2*2 # product
+2/2 # division
+2-2 # difference
 ```
 
-If you have data objects in your workspace, R can also carry out operations on those objects:
+If you have data objects in your workspace, R can also carry out operations on those objects using their stored contents:
 ```{r}
+a1
+A1
 a1+A1
 a1*A1
 a1/A1
@@ -158,7 +161,7 @@ Vectors can contain any kind of data. The example above was a vector of numbers,
 a3<-c("one", "two", "three")
 ```
  
- or logicals:
+or logicals:
 ```{r}
 a4<-c(TRUE, TRUE, FALSE)
 ```
@@ -183,6 +186,15 @@ What happens when you multiply the vector *a2* by itself? Create and run this op
 
 ```
 
+
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
+# Notebooks, Scripts, and Consoles: Different Tools, Same Jobs
+Once an object is in your environment, you can reach it using any valid way to execute code that uses the same environment. 
+
+Type the operation you just created into the console (it should be underneath the panel that contains this notebook), after the blue *>*. Hit *Enter* when you are done typing to run the operation. Did you get the same result?
+
+Now, create a script (File -> New File -> R Script). Put the same operation into the script. Then, with your cursor on the line containing your operation, hit the *Run* button at the top right or use *Ctrl + Enter* on the keyboard to run the operation. How about now?
 
 
 *******************************************************************************************************************************************
@@ -225,12 +237,17 @@ a5<-addto3(4.5)
 a5
 ```
 
-R is smart enough to return an error if you try to pass a non-numeric value to a function that does a numeric operation:
+R is smart enough to return an error if you try to pass a non-numeric value to a function that carries out a numeric operation:
 ```{r}
 addto3("apple")
 ```
 
-But there are plenty of operations that can be done on character strings. One common operation is *concatenation*, which is carried out here by the *paste()* function:
+But there are plenty of operations that can be done with character strings. One common operation is *concatenation*, which is carried out here by the *paste()* function. Let's see what this function does first, so we have the syntax:
+```{r}
+?paste
+```
+
+Now we can use this function as part of our own function:
 ```{r}
 underscore_it<-function(text1, text2){
   new_value<-paste(text1, "_", text2, sep="") # The operation to be performed
@@ -254,7 +271,7 @@ underscore_it(2, 8)
 ```
 
 
-In the empty code block below, create a function that carries out some other simple one-step operation.
+In the empty code block below, create a function that carries out some other simple one-step arithmetic operation.
 ```{r}
 
 ```
@@ -290,7 +307,7 @@ tibble(a2, a22)
 ```
 
 
-Tibbles can contain different data types, as long as the number of rows is compatible. Each named column will have its own type.
+Tibbles can contain different data types, as long as the number of rows is the same. Each named column will have its own type.
 ```{r}
 mydata<-tibble(animal=c("dog", "cat", "mouse", "horse"),
                kg=c(30, 4.5, 0.025, 550),
@@ -309,60 +326,7 @@ names(mydata)
 ```
 
 *******************************************************************************************************************************************
-## Intro to data manipulation in Tidyverse
-Tidyverse makes it very easy to manipulate data in the form of tibbles. (**For each of the following:** How big do you expect the resulting tibble to be? How many rows and columns?)
-
-First, we can mutate (transform) existing columns and append the results to the tibble. 
-```{r}
-mydata<-mydata %>%
-  mutate(lbs=2.2046*kg)
-mydata
-```
-
-
-*******************************************************************************************************************************************
-Wait - what did we do there? That's called a **pipe**, and it comes from a Tidyverse package called **magrittr**. The pipe is a great way to keep your R code clean, readable, and therefore maintanable. Consider the following example. Can you tell what this nest of function calls is doing?
-```{r}
-round(cos(exp(sin(log10(sqrt(25))))), 2)
-```
-
-It's a mess. If instead the functions are called through a series of pipes, it's much easier to see what's happening:
-```{r}
-sqrt(25) %>%   # Take the square root of 25...
-  log10() %>%
-  sin() %>%
-  exp() %>%
-  cos() %>%
-  round(2)
-```
-
-What the pipe is doing is putting the result from the left-hand side (or in our case from above) and put it into the right hand side (or in our case into the code below). When we write out code this way, it's much easier to see what is happening, as well as to fix any mistakes.
-*******************************************************************************************************************************************
-
-
-
-But let's get back to parsing our data. We can select only specific columns:
-```{r}
-mydata %>%
-  select(animal, body_len)
-```
-
-or a range of columns:
-```{r}
-mydata %>%
-  select(animal:body_len)
-```
-
-We can filter a tibble, retaining only the rows that satisfy a given condition:
-```{r}
-mydata %>%
-  filter(kg>25)
-```
-
-
-
-*******************************************************************************************************************************************
-## Exploring Your Data
+# Exploring Your Data
 Now we can start asking some questions!
 
 The professor didn't actually bother to tell us anything about what's in the data set, so let's start by taking a look ourselves. Base R has some options for looking at a data set directly. For example, *View()* can be used to pop up the data as a table in a new tab.  
@@ -434,13 +398,13 @@ pokemon[[2]][1:10]
 t(pokemon[,2])[1:10]
 ```
 
-We can also *pipe* these commands. Piping is a functionality provided by Tidyverse. The operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
+We can also *pipe* these commands. Remember that the operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
 ```{r}
 pokemon %>% .$pokemon[1:10]
 ```
 
 That didn't work. Why?
-There are places where the integration between Tidyverse and base R isn't completely seamless; this is one of those places. We have to let Tidyverse keep calling the shots here to get the result we want. Instead of trying to index directly, we can use *slice()* from *dplyr* FIRST to index rows by their integer locations.
+There are places where the integration between Tidyverse and base R isn't completely seamless; this is one of those places. We have to let Tidyverse call the shots here to get the result we want. Instead of trying to index directly, we can use *slice()* from *dplyr* FIRST to index rows by their integer locations.
 ```{r}
 pokemon %>% slice(1:10)
 pokemon %>% slice(1:10) %>% .$pokemon
@@ -464,13 +428,19 @@ The function *dplyr::summarize()* will let us do that easily.
 #?dplyr::summarise #These are the same function - either spelling is fine
 ```
 
-Let's try it. Are there any differences in average measurements for Pokemon of different primary types? First we have to group the data according to primary type. What does this do to the data set?
+Let's try it. Are there any differences in average measurements for Pokemon of different primary types? First, what types of Pokemon are in this data set?
+```{r}
+unique(pokemon$type_1)
+```
+
+
+Next we have to group the data according to primary type. What does this do to the data set?
 ```{r}
 pokemon %>%
   group_by(type_1)
 ```
 
-Then we can ask the *summarize()* function to calculate lots of different summary statistics for us.
+Then we can ask the *summarize()* function to calculate lots of different summary statistics for us. Let's calculate some averages:
 ```{r}
 pokemon_avg_by_type<-pokemon %>%
   group_by(type_1) %>%
@@ -486,7 +456,7 @@ pokemon_avg_by_type<-pokemon %>%
 glimpse(pokemon_avg_by_type)
 ```
 
-**EXERCISE:** Create your own summary of the data set and save it as a new object. What do you want to group by? What summary measures do you want to take?
+**EXERCISE:** Create your own summary of the data set and save it as a new object. What do you want to group by? What summary measures do you want to take? (Remember that you can add more code chunks by putting your cursor on the line you want the code block to start and using *Ctrl+Alt+I*, Code->Insert Chunk, or the Insert Chunk button on the toolbar.)
 ```{r}
 
 ```
