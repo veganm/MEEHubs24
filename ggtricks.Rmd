@@ -5,18 +5,11 @@ output: html_notebook
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-```{r}
-plot(cars)
-```
-
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
-
 
 
 # Getting started
@@ -29,13 +22,14 @@ This workshop assumes that you:
 
 Before we begin, we'll need to install and load the packages we'll be working with from CRAN:
 ```{r}
-pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra)
+pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra, ggsci)
 ```
 
 If you attended the prior workshops, you've already been introduced to Tidyverse and the pokemon data set. We'll also be working with some packages that add new functionality to the ggverse:
 * *cowplot* is an add-on to *ggplot* with features that help with creating publication-quality figures, including new themes and functions for assembly of compound multi-panel figures. 
 * *gridExtra* allows for more complex plot gridding
 * *ggpubr* allows users to annotate plots, including overlay of statistical comparisons directly onto plots, and provides some user-friendly tools for manipulating ggplot formatting
+* *ggsci* has a variety of *ggplot2* color palettes inspired by scientific journals, data visualization libraries, movies, and TV shows
 
 ## Working with cowplot: themes and plot_grid
 This package includes some new theme options to explore:
@@ -51,10 +45,10 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 Most of the functionality here is for creation of multipanel plots.
 ```{r}
 # Save each ggplot as an object
-p1<- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
+p1 <- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   theme_classic()
-p2<- ggplot(pokemon, aes(height, weight, color=type_1)) +  # data + aesthetics (x, y, point color) 
+p2 <- ggplot(pokemon, aes(height, weight, color=type_1)) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   theme_classic()
 
@@ -67,7 +61,7 @@ plot_grid(p1, p2,
 
 The grid components can be basically any plot object. 
 ```{r}
-p3<-ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+p3 <- ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   geom_smooth() +  # Produces a smoothed line showing data trends
   theme_classic()+
@@ -89,6 +83,24 @@ plot_grid(p1, p3,
           )
 ```
 
+It is a little difficult to see what's happening in plot A. Let's rework it
+```{r}
+p1
+
+p4 <- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color)
+  geom_point() +
+  theme_classic() + 
+  facet_wrap(~type_1)
+p4
+
+```
+
+What else should we add or change to this plot?
+How about modifying the labels / sizing?
+
+How would you change the attack vs. defense plot for the different generations
+(depending on what question you were asking)
+
 
 **EXERCISE: You try it!** Create a new ggplot object and grid together two or more plots.
 ```{r}
@@ -98,6 +110,29 @@ plot_grid(p1, p3,
 
 
 ## Data manipulations with dplyr
+Sometimes after plotting, may realize that you want to manipulate the data some more to make different plots.
+Let's say you want to look for a correlation between typing systems within a pokemon.
+However, as an experienced pokeologist, you know that not all pokemon are dual typed.
+
+```{r}
+glimpse(pokemon) # taking a look at the data
+
+sum(is.na(pokemon$type_2))
+```
+
+To deal with this, you may will need to remove non-dual-typed pokémon.
+While we're at it, let's exclude some columns we don't care about.
+```{r}
+pokemon %>% select(-url_icon, -url_image) %>%
+  na.exclude(type_2)
+```
+
+```{r}
+pokemon %>% select(-url_icon, -url_image) %>%
+  na.exclude(type_2) %>% ggplot(aes(x = type_1, y = type_2, fill = frequency())) + geom_tile()
+  
+```
+
 
 
 
@@ -108,6 +143,7 @@ plot_grid(p1, p3,
 # The Wider ggverse: devtools
 
 
+# ggsci
 
 
 
