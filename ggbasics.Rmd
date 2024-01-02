@@ -45,7 +45,7 @@ install.packages("pacman")
 
 Now that pacman is installed, we can use its *p_load()* function to speed up library handling. This function takes a list of CRAN packages, checks to see whether you already have them installed, installs anything that's missing, then loads everything in the list into your workspace. All with one call!
 ```{r, echo=FALSE, message=FALSE, results='hide'}
-pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes, cowplot)
+pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes, cowplot, Hmisc)
 ```
 
 (By way of explanation here: The syntax *package::function()* tells R to execute the named function as coded in the specified package. This is useful when there are functions with the same name in different packages, to make sure you are calling the right one when you need it, and when you only need the one function and don't want to load an entire package.)
@@ -78,7 +78,7 @@ names(pokemon)
 
 **************************************************************************************************************************
 # Plotting With ggplot
-*ggplot2* is the most-used package for producing data visualizations in R. It's tremendously powerful and flexible, with many, many ways to customize a plot. 
+*ggplot2* is the most-used package for producing data visualizations in R. It's tremendously powerful and flexible, with many, many ways to customize a plot.
 
 The basics of a *ggplot2* call are simple. You need to provide, at minimum:
 * **Data** (the name of the data frame that contains the data for plotting)
@@ -87,16 +87,13 @@ The basics of a *ggplot2* call are simple. You need to provide, at minimum:
 
 
 ## Syntax
-Let's say that we want to begin with attack vs defense. These are both *quantitative* variables, so a scatterplot (where the x and y axis are both continuous numeric scales) is appropriate. In base R, the simplest way to make this plot is:
+Let's begin by asking whether there is a relationship between attack and defense scores overall. What happens if we try to create a ggplot from these data but without specifying the geometry?
 ```{r}
-plot(pokemon$attack, # x axis
-     pokemon$defense, # then y axis
-     type="p",       # "p" for points
-     main="Pokemon Attack vs Defense"
-     )
+ggplot(pokemon, aes(attack, defense))  # data + aesthetics (x,y) 
 ```
 
-In *ggplot2*, we explicitly define the data, aesthetics (at a minimum the x and y), and geometry as:
+
+We need to specify the kind of plot we want to produce. These are both *quantitative* variables, so a scatterplot (where the x and y axis are both continuous numeric scales) is appropriate. 
 ```{r}
 ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x,y) 
   geom_point() # creates a scatter plot
@@ -120,10 +117,14 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x,y)
   geom_point(shape="square", size=0.5, color="red") # creates a scatter plot
 ```
 
-We can add informative aesthetics by using one or more of the *categorical variables* to divide the data into groups. For example, Pokemon type 1 is a factor with levels:
+***************************************************************************************************************************************
+## Informative Aesthetics By Group
+We can add informative aesthetics by using one or more of the *categorical variables* to divide the data into groups. For example, Pokemon are of different, unique types, and each row in the data set contains information on the primary type of the Pokemon that was measured:
 ```{r}
 unique(pokemon$type_1)
 ```
+
+Maybe the relationship between attach and defense is different across types?
 
 We can use this information to color each point according to the type of the Pokemon:
 ```{r}
@@ -137,7 +138,7 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
   geom_point(alpha=0.5) #alpha is a number between 0 and 1 that specifies opacity - try changing this!
 ```
 
-We can add more than one informational aesthetic at a time. For example:
+We can add more than one informational aesthetic at a time. For example, you think you remember seeing a paper on Pokemon strength changing over generations; maybe that's a factor to investigate in these data?
 ```{r}
 ggplot(pokemon,  # the data
        aes(attack, defense,  # x and y
@@ -167,8 +168,9 @@ ggplot(pokemon,  # the data
   geom_point(alpha=0.8) # remember that alpha in [0,1] controls point opacity
 ```
 
-The plot now is so busy that R is warning us about our design! Don't worry, we'll simplify this plot so it's usable later. But first, a few more design elements.
+The plot now is so busy that R is warning us about our design! We'll have to simplify this plot so it's usable. But first, a few more design elements.
 
+****************************************************************************************************************************************
 ## Themes
 We don't have to stick with the basic design. In *ggplot*, you can specify *themes* that provide different defaults for plot structural elements like the plot background and axes. Let's try a few!
 ```{r}
@@ -199,6 +201,7 @@ For information on a given theme, consult its help file:
 ```
 
 
+****************************************************************************************************************************************
 ## Theme Elements and Plot Labels
 We can control the size/position/color/etc of text, and change how different plot elements are labeled, with *theme()*. 
 ```{r}
@@ -254,56 +257,19 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 
 
 
-
-**************************************************************************************************************************
+****************************************************************************************************************************************
+****************************************************************************************************************************************
 # Facets: facet_wrap() and facet_grid()
-Alternately, maybe we want to separate out different parts of the data onto separate plots. The function *facet_wrap()* lets us specify a single factor to use for separating the data. For example, if we want to plot Pokemon of different generations on different plots, we can do so:
+Our attempts at visualizing the attack/defense relationship vs. type and generation so far have produced really busy plots. Maybe it would be better to separate out different parts of the data onto separate plots. Fortunately, we don't have to go through the trouble of creating these plot by plot.
+
+The function *facet_wrap()* lets us specify a single factor to use for separating the data. For example, if we want to plot Pokemon of different generations on different plots, we can do so:
 ```{r}
 ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y) 
   geom_point(aes(color=as.factor(generation_id))) +
-  geom_smooth() +  # Produces a smoothed line showing data trends
   theme_classic()+
   facet_wrap(~generation_id)
 ```
 Note that *facet_wrap()* automatically converted the numeric variable *generation_id* into a factor. 
-
-In this call, *geom_smooth()* is applied to the data *within each grid panel*, but it hasn't inherited the color aesthetic. What happens if we move the color aesthetic into the "boss" call to *ggplot()*?
-```{r}
-ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
-  facet_wrap(~generation_id)
-```
-
-Now both geometries have inherited the same color aesthetic.
-
-If we want to separate Pokemon by type:
-```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
-  geom_point(aes(color=as.factor(generation_id))) +
-  geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
-  facet_wrap(~type_1)
-```
-
-Notice that the smoothing function is upset with us here - there aren't enough points in some of these panels for smoothing to work properly.
-
-The function *facet_grid()* lets us separate the data by two factors simultaneously, making a grid. This function requires us to specify the data defining facet groups as *vars()*. Notice that we can specify which factor goes along rows vs. columns of the grid; if we don't specify, the first variable we provide will go down the rows and the second along the columns.
-```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
-  geom_point(aes(color=as.factor(generation_id))) +
-  theme_light()+
-  facet_grid(rows=vars(type_1), cols=vars(type_2))
-```
-
-This is a very big plot! Click on "Show in new window" to get a closer look.
-
-
-
-**************************************************************************************************************************
-# ggplot vs geom Elements
-One very important thing about ggplot is how aesthetics are inherited. So far, we have been specifying aesthetics in the call to *ggplot()*. When we do this, the aesthetics are *inherited* by all of the geometries - and we can specify more than one!
 
 Let's say we want to add lines to the scatter plot, to show the relationship between the attack and defense variables. The geometry *geom_line()* will add a line plot, using lines to connect adjacent points:
 ```{r}
@@ -325,7 +291,8 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
   geom_smooth() +  # Produces a smoothed line showing data trends
   theme_classic() # the classics never get old
 ```
-As you can see, the smoothed line is the same color as the points.
+
+We didn't tell the smoothed lines what color to be, but they are the same colors as in the data. This is due to the way that **ggplot** handles **aesthetic inheritances**. In this case, because the color aesthetic is in the "boss" call to *ggplot()*, all of the geometries will inherit that color aesthetic along with the data aesthetics - unless we say otherwise.
 
 If we instead put the color aesthetic in the first geometry, this happens:
 ```{r}
@@ -335,7 +302,8 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color)
   theme_classic() 
 ```
 
-*geom_smooth* still inherits the aesthetics from the call to *ggplot* - it's just that we didn't supply a color aesthetic there! Now only the *geom_point()* layer can use the information about generation ID.
+Now there is a single smoothed fit line. *geom_smooth()* only has the x/y aesthetics from the "boss" call, and that's all it knows to do. The color aesthetic from *geom_point()* isn't passed on to any other geometries in the same plot.
+
 What if we put the color aesthetic into the *geom_smooth* function?
 ```{r}
 ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
@@ -355,16 +323,180 @@ ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data 
 ```
 
 
-**EXERCISE: Now you try!** Use the empty code block below to modify the aesthetic inheritances in your own plot. What difference does it make when you move a color/shape aesthetic from the main call into the geometry call? What difference does it make when you have more than one geometry? 
+Now that we know about inheritances and stacking geometries, let's get back to trying to simplify our plot. What if we facet this out?
+```{r}
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~generation_id)
+```
+
+As you can see, the smoothed line is applied to the data *within each grid panel* and is the same color as the points, since both geometries have inherited all their aesthetics from the "boss" call. 
+
+We still want to see the data trends by type and by generation. We can use aesthetic inheritances to do this. Let's try faceting the data by type, then color by generation:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Notice that the smoothing function is upset with us here - there aren't enough points in some of these panels for smoothing to work properly.
+
+The function *facet_grid()* lets us separate the data by two factors simultaneously, making a grid. This function requires us to specify the data defining facet groups as *vars()*. Notice that we can specify which factor goes along rows vs. columns of the grid; if we don't specify, the first variable we provide will go down the rows and the second along the columns.
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point(aes(color=as.factor(generation_id))) +
+  theme_light()+
+  facet_grid(vars(type_1), vars(generation_id))
+#  facet_grid(cols=vars(type_1), rows=vars(generation_id))
+```
+
+This is a very big plot! Click on "Show in new window" to get a closer look.
+
+****************************************************************************************************************************************
+# Briefly, Some More Geometries
+
+## One Quantitative Variable: Histograms, Densities, and Violins
+Histograms are handy for showing distributions of a quantitative variable. Let's see how hit points (hp) are distributed overall:
+```{r}
+ggplot(pokemon, aes(hp)) +
+  geom_histogram(color="white", # outline color
+                 fill="darkgreen" # fill color
+                 )+
+  theme_classic()
+```
+
+As always, aesthetics can be informational. For example, we can see the distributions of hit points for Pokemon of different types:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_histogram(color="white", # outline color
+                 binwidth=10)+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Densities also show distributions nicely. Since these data are converted to relative frequency within groups, it can be easier to compare densities than raw counts when the total number of data points is very different across groups.
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_density(color="grey")+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+This is a nice way to see the features in the data. But if we want to make comparisons across groups, we want to have the data that are being compared on a single plot. How can we do that?
+
+If you want to show distributions on top of each other, it can sometimes be effective to use densities if the number of groups isn't too large:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_density(color="grey", alpha=0.5)+ # and add some transparency
+  theme_classic()
+```
+
+This is honestly too many levels to show on top of each other in the same plot. A stacked histogram is another option, but this isn't easy to read either:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_histogram(color="white", # outline color
+                 binwidth=10)+
+  theme_classic()
+```
+
+If we want to compare across groups, maybe we should show distributions of the quantitative variable side by side instead. A boxplot is one option:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_boxplot()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+A violin plot can also be attractive and informative, particularly for data like these that are not normally distributed:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+If the number of points in each category isn't too large, it is often recommended to over-plot the raw data:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+That didn't work. Geometries are deposited on the plot in order of appearance - if we want to see the data points AND have a color fill for the violins, we have to reverse the order:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  geom_jitter(width=0.2, size=0.5)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+Or we can remove the violin fill. Now we need to switch to *color* instead of *fill* so that the data points have the right colors:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin(fill=NA)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+## Bar Plots
+Bar plots can be used to summarize quantitative data over categories. We could do this manually by calculating the means and standard deviations of the data, saving those values in a new tibble, and plotting those data, or the *stat_summary()* function from **Hmisc** can make the plot for us:
+```{r}
+ggplot(data = pokemon, mapping = aes(x = type_1, y=hp, fill=type_1)) +
+  stat_summary(fun = "mean", geom = "col") + 
+  stat_summary(fun.data = mean_sdl, geom = "errorbar", width = .5, fun.args = list(mult = 1))+
+    theme(axis.text.x = element_text(angle=45, vjust=0.8))
+```
+
+Bar plots can also be used to show relationships between categories. For example, we might ask how egg types are distributed over different types of Pokemon:
+```{r}
+ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar() +  # Automatically counts the number of cases at each x position
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+```
+The raw counts are hard to read. We could put the counts next to each other:
+```{r}
+pEggDodge<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="dodge") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggDodge
+```
+
+but this plot is sprawling. Let's make a stacked plot of proportions instead:
+```{r}
+pEggStack<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="fill") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggStack
+```
+
+
+**EXERCISE:** Change the plot options in this section to figure out what they do. (It can be helpful to copy a line or block of code, comment out the original, then start making changes to the copy - this lets you keep the old code for reference while you are breaking the options.)
+```{r}
+
+```
+
+**EXERCISE: Now you try!** Pick two or three columns from the Pokemon data set and use the empty code block below to create your own plot of those data. What difference does it make when you move a color/shape aesthetic from the main call into the geometry call? What difference does it make when you have more than one geometry? 
 ```{r}
 
 ```
 
 
 
+****************************************************************************************************************************************
 **************************************************************************************************************************
 # Fine-Tuning the Aesthetics: Color Scales and Palettes
-Let's see if there is any relationship between attack/defense components and speed. Notice that we are saving the plot as an object now; see if you can find it in your environment. What is contained in a *ggplot* object? 
+Next, let's see if there is any relationship between attack/defense components and speed. 
+
+(Notice that we are saving the plot as an object now; see if you can find it in your environment. What is contained in a *ggplot* object? )
 ```{r}
 pAttackVsSpeed <- ggplot(pokemon, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
   geom_point()
@@ -428,29 +560,12 @@ pAttackVsSpeed + scale_color_distiller(palette="PuBuGn")
 ```
 
 
-Since these scales are designed to be discrete, let's generate a plot that uses discrete (categorical) data. For example, we might ask how egg types are distributed over different types of Pokemon:
+Since these scales are designed to be discrete, let's generate a plot that uses discrete (categorical) data. Earlier, we made a plot to show how egg types are distributed over different types of Pokemon:
 ```{r}
-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar() +
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
-```
-The raw counts are hard to read. We could put the counts next to each other:
-```{r}
-pEggDodge<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar(position="dodge") +
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
-pEggDodge
-```
-
-but this plot is sprawling. Let's make a stacked plot of proportions instead:
-```{r}
-pEggStack<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar(position="fill") +
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
 pEggStack
 ```
 
-Much better, except that the colors are fairly unpleasant. Let's use ColorBrewer to access some new options.
+Discrete categories do work better with discrete scales, but the default colors are fairly unpleasant. Let's use ColorBrewer to access some new options.
 ```{r}
 pEggStack + scale_color_brewer()
 ```
@@ -546,7 +661,7 @@ specplot(scales::viridis_pal()(8))
 specplot(desaturate((scales::viridis_pal()(8)), amount=1))
 ```
 
-**EXERCISE:** Use these tools to interrogate some of the palettes we have just seen. Make your own palette and do the same.
+**EXERCISE:** Use these tools to interrogate one of the palettes we have just seen. Make your own palette and do the same.
 ```{r}
 
 ```
@@ -555,13 +670,13 @@ specplot(desaturate((scales::viridis_pal()(8)), amount=1))
 
 ## Simulating color blindness with colorblindr
 This package currently depends on the development versions of **cowplot** and **colorspace**, so let's install those first:
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, results='hide'}
 remotes::install_github("wilkelab/cowplot")
 install.packages("colorspace", repos = "http://R-Forge.R-project.org")
 ```
 
 Then we can install **colorblindr** from repository:
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE, echo=FALSE, results='hide'}
 remotes::install_github("clauswilke/colorblindr")
 ```
 
@@ -599,88 +714,13 @@ cvd_grid(pAttackVsSpeed+scale_color_viridis_c())
 
 
 
-
-**************************************************************************************************************************
-# Other Geometries
-This section is basically a code bank for your use.
-
-## Histograms, Densities, and Violins
-Histograms are handy for showing distributions:
-```{r}
-ggplot(pokemon, aes(hp)) +
-  geom_histogram(color="white", # outline color
-                 fill="darkgreen" # fill color
-                 )+
-  theme_classic()
-```
-As always, aesthetics can be informational:
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_histogram(color="white", # outline color
-                 binwidth=10)+
-  theme_classic()+
-  facet_wrap(~type_1)
-```
-
-Densities also show distributions nicely:
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_density(color="grey")+
-  theme_classic()+
-  facet_wrap(~type_1)
-```
-To show distributions side by side, a violin plot can be attractive:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_violin()+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-
-If the number of points isn't too large, it is often recommended to over-plot the data:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_jitter(width=0.2, size=0.5)+
-  geom_violin()+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-That didn't work. Geometries are deposited on the plot in order of appearance - if we want to see the data points AND have a color fill for the violins, we have to reverse the order:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_violin()+
-  geom_jitter(width=0.2, size=0.5)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-Or we can remove the violin fill. Now we need to switch to *color* instead of *fill* so that the data points have the right colors:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
-  geom_jitter(width=0.2, size=0.5)+
-  geom_violin(fill=NA)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-
-**EXERCISE:** Change the values on the plot options above to figure out what they do. (It can be helpful to copy a line of code, comment out the original, then start making changes to the copy - this lets you keep the old code for reference while you are breaking the options.)
-
-
-## Bar Plots
-
-
-
-## Labeling wih geom_text()
-We can even use different data sets within a single plot. Similar to aesthetics, the data are inherited within a *ggplot()* call, *unless you specify otherwise*.
-
-
 # Resources
+https://www.kaggle.com/code/kitman0804/visualising-pokemon-stats-with-ggplot
 https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
 https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
 https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
+https://thatdatatho.com/learning-the-tidyverse-basic-dplyr/
 https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
 https://github.com/EmilHvitfeldt/r-color-palettes
 https://github.com/clauswilke/colorblindr
