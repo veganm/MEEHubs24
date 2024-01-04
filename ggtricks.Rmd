@@ -10,10 +10,9 @@ This workshop assumes that you:
 * Understand the basics of how R creates and handles objects
 * Know the basic parts of a call to *ggplot()*, including how to change aesthetics and geometries
 
-
 Before we begin, we'll need to install and load the packages we'll be working with from CRAN:
 ```{r}
-pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra, ggsci, devtools)
+pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra, ggsci, devtools, rstatix)
 ```
 
 If you attended the prior workshops, you've already been introduced to Tidyverse and the pokemon data set. We'll also be working with some packages that add new functionality to the ggverse:
@@ -26,7 +25,7 @@ If you attended the prior workshops, you've already been introduced to Tidyverse
 This package includes some new theme options to explore:
 ```{r}
 ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
+  geom_point() + 
 #  theme_minimal_vgrid()
 #  theme_minimal_hgrid()
 #  theme_minimal_grid(12)
@@ -34,28 +33,33 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 ```
 
 Most of the functionality here is for creation of multipanel plots.
+There are a couple of options here: cowplot and gridExtra
 ```{r}
 # Save each ggplot as an object
 p1 <- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   theme_classic()
+  
 p2 <- ggplot(pokemon, aes(height, weight, color=type_1)) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   theme_classic()
 
+# cowplot
 plot_grid(p1, p2,
 #          labels="AUTO",  # labels panels as "A", "B" etc
           labels="auto",   # labels panels as "a", "b" etc
           label_size = 12)
-```
 
+# gridExtra
+gridExtra::grid.arrange(p1,p2, ncol=2)
+```
 
 The grid components can be basically any plot object. 
 ```{r}
 p3 <- ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
   geom_point() +
   geom_smooth() +  # Produces a smoothed line showing data trends
-  theme_classic()+
+  theme_classic() +
   facet_wrap(~generation_id) +
   labs(color="Generation")
 
@@ -65,31 +69,74 @@ plot_grid(p1, p3)
 
 It may be wise to re-orient and/or re-size sub-plots:
 ```{r}
-plot_grid(p1, p3, 
+plot_grid(p1, NA, p3, 
           nrow=1, # orient plots in a single row
-          rel_widths = c(1.5,2), # change relative heights,
-#          ncol=1, # orient plots in a single column
+          #rel_widths = c(1.5,2),
+          rel_widths = c(1.5, .5, 2),# change relative heights,
+ #         ncol=1, # orient plots in a single column
 #          rel_heights = c(1,2), # change relative heights,
           labels = "AUTO"
+### REMOVE THE B -- PROBABLY DON'T USE AUTO LABELS
           )
 ```
 
-
-It is a little difficult to see what's happening in plot A. Let's rework it
+What about special attack and defense broken out by type?
 ```{r}
-p1
-p4 <- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color)
+p4 <- ggplot(pokemon, aes(special_attack, special_defense,
+                          color=type_1)) +  # data + aesthetics (x, y, point color)
   geom_point() +
   theme_classic() + 
-  facet_wrap(~type_1)
+  facet_wrap(~type_1) +
+  guides(col = guide_legend(ncol = 2)) #+ 
+  #theme(axis.text=element_text(size=10))
+#### PLAY AROUND WITH GUIDE LEGEND, SEE WHAT WORKS IN DIFFERENT SCENARIOS
 p4
 ```
 
 What else should we add or change to this plot?
 How about modifying the labels / sizing?
+```{r}
+plot_grid(p1, p4, #specifying which plots
+          nrow = 1, #put them on one row
+          rel_widths = c(2, 3))
+```
+
+
+This legend is really throwing off the scale... let's move it to the bottom!
+```{r}
+prow <- plot_grid(
+  p1 + theme(legend.position="none") 
+  #+ geom_smooth()
+  , #font +
+  p4 + theme(legend.position="none",
+          axis.text.x = element_text(angle = 90
+                                     #, vjust = 0.5
+                                     #, hjust=1
+                                     )),
+  #align = 'vh',
+  labels = c("A", "B"),
+  #hjust = -1,
+  nrow = 1,
+  rel_widths = c(3,4)
+)
+prow
+
+legend <- get_legend(p1 +
+                       guides(col = guide_legend(ncol = 9))
+                     )
+legend
+
+plot_grid(prow, legend, nrow = 2,
+          rel_heights = c(6, 1))
+```
+
 
 How would you change the attack vs. defense plot for the different generations
 (depending on what question you were asking)
+```{r}
+
+```
+
 
 **EXERCISE: You try it!** Create a new ggplot object and grid together two or more plots.
 ```{r}
@@ -165,20 +212,36 @@ There's more functionality available here (lots more!) but these are some of the
 # More data manipulation tricks
 
 Sometimes after plotting, may realize that you want to manipulate the data some more to make different plots.
+
+First, let's look at it.
+
+We can use the View() command, or click on it in the environment panel.
+
 I'm curious about the mega evolutions, but we need to do some exploration before we can plot.
 
 Which pokemon have mega evolutions? Let's use grep and stringr to extract the rows that we're interested in
 ```{r}
-#hits <- grep("mega", pokemon$pokemon, fixed = TRUE, value = TRUE)
-#hits
-#what is the problem with this? why do I need to do this differently?
+hits <- grep("mega", pokemon$pokemon, fixed = TRUE, value = TRUE)
+hits
+```
+What is the problem with this?
+Why do I need to do this differently?
 
+Let's try that again
+```{r}
 hits <- as.data.frame(grep("-mega", pokemon$pokemon, fixed = TRUE, value = TRUE)) %>%
   rename("mega" = 'grep("-mega", pokemon$pokemon, fixed = TRUE, value = TRUE)')
 
+hits
+```
+
+
+I want to add a column that has the regular evolution for each mega evolution
+We can do that quickly by using the str_replace() function from stringr and adding it to our hits df
+```{r}
 hits$reg <- hits$mega %>%
   str_replace("-mega.*$", "")
-
+hits
 ```
 
 The data isn't in the right format. We need to pivot it before we continue
@@ -186,20 +249,34 @@ The data isn't in the right format. We need to pivot it before we continue
 hitlong <- pivot_longer(hits, cols = everything())
 ```
 
+***Exercise: If you have time, explore the other pivot option, pivot_wider()***
+What does it do? When do you think you would use it?
+```{r}
+?pivot_wider()
+```
+FYI: gather() and spread() are no longer recommended
+
+
 Now that we have a df with the names of mega and their regular counterpart, let's join with the original pokemon dataframe to get the stats for these pokemon
 ```{r}
 left_join(hitlong, pokemon, by = c("value" = "pokemon"))
 
-#let's keep this for future use...
+# let's keep this for future use...
 lj <- left_join(hitlong, pokemon, by = c("value" = "pokemon")) %>%
   select(-url_icon, -url_image) %>%
-  distinct() # only print identical lines once
+  distinct() %>% # only print identical lines once #####
+  rename("meg" = "name",
+         "name" = "value")
   
 glimpse(lj)
 ```
 
-What happens if we use the other types of join? Why do we know this is the correct one?
-(hint: check the number of rows in the df)
+
+***Exercise: What happens if we use the other types of join?***
+How do we know we ran the correct one? (hint: check the number of rows in the df)
+```{r}
+
+```
 
 
 # Publication-quality plots with ggpubr
@@ -209,34 +286,156 @@ Let's use ggpubr to make some plots comparing mega and regular pokemon
 ```{r}
 aplot <- ggdensity(lj, x = "attack",
                    add = "mean", rug = TRUE,
-                   color = "name", fill = "name",
+                   color = "meg", fill = "meg",
                    palette = c("#00AFBB", "#E7B800"))
 
 dplot <- ggdensity(lj, x = "defense",
                    add = "mean", rug = TRUE,
-                   color = "name", fill = "name",
+                   color = "meg", fill = "meg",
                    palette = c("#00AFBB", "#E7B800"))
 
 plot_grid(aplot, dplot)
 ```
 
-What else should we do to make this plot prettier before we send it off?
+Are these significantly different? Let's do some statistical analyses and add the results to the plot!
+
+There is a little problem: a Mewtwo and Charizard have multiple mega evolutions.
+For the sake of time today, let's just exclude them and use the pokemon with one mega evolution
+```{r}
+#find out the species ID for charizard and mewtwo
+filter(lj, name == "charizard" | name == "mewtwo")
+
+newdf <- lj %>%
+  select(meg:species_id, attack, defense) %>%
+  filter(species_id != 6 & species_id != 150) 
+```
+
+Let's test for normality so we can decide whether to use parametric or non-parametric tests
+```{r}
+newdf %>% 
+  group_by(meg) %>%
+  shapiro_test(attack)
+
+newdf %>% 
+  group_by(meg) %>%
+  shapiro_test(defense)
+```
+
+The attack data is normally distributed, but the defense data is not.
+Let's use non-parametric tests for both **ask workshop test run about this**
+(***also ask workshop about variance test***)
+
+Looking at the data, let's do a one-sided Wilcoxon signed rank test, where our null hypothesis is that attack and defense are unchanged for mega evolutions, and our alternate hypothesis is that mega evolutions have higher attack and defense than their normal evolution.
+
+# Wilcoxon signed rank test (the data are paired) - rstatix
+```{r}
+# wilcox_test is from rstatix, wilcox.test is from base
+
+newdf %>%
+  pairwise_wilcox_test(attack ~ meg,
+                       paired = T,
+                       alternative = "greater")
+
+newdf %>%
+  pairwise_wilcox_test(defense ~ meg,
+                       paired = T,
+                       alternative = "greater")
+```
+
+# Wilcoxon signed rank test (the data are paired) - ggpubr
+```{r}
+compare_means(attack ~ meg,
+              newdf,
+              method = "wilcox.test",
+              paired = TRUE,
+              p.adjust.method = "holm")
+
+compare_means(defense ~ meg,
+              newdf,
+              method = "wilcox.test",
+              paired = TRUE,
+              p.adjust.method = "holm")
+```
+
+
+It appears that the mega evolutions have significantly higher attack and defense than their regular evolution counterparts.
+
+Let's make a plot with those values included!
+
+```{r}
+ap <- ggpaired(newdf, x = "meg", y = "attack",
+         color = "meg", line.color = "gray", line.size = 0.4,
+         palette = "jco") +
+  stat_compare_means(paired = TRUE,
+                      label.y = 160,
+                      label.x = 1.5
+                     )
+
+ad <- ggpaired(newdf, x = "meg", y = "defense",
+         color = "meg", line.color = "gray", line.size = 0.4,
+         palette = "jco") +
+  stat_compare_means(paired = TRUE,
+                      label.y = 160,
+                      label.x = 1.5
+                     )
+
+plot_grid(ap, ad)
+```
+
+
+***Exercise: Your turn! How should further modify this plot to make it ready for publication?***
+```{r}
+?ggpaired
+
+####YOUR CODE HERE####
+```
+
 
 To ask this question a different way, I should use all regulars and a different join.
 Do the pokemon that have a mega evolution have a lower regular attack/defense?
+What can we conclude from this test, and what requires further investigation?
+
 
 
 # The Wider ggverse: devtools
-devtools has a variety of tools that facilitate package devlopment. In this case, we can install packages that are *not* on CRAN. This expands the tools available to us!
+devtools has a variety of tools that facilitate package development. In this case, we can install packages that are *not* on CRAN. This expands the tools available to us!
 
 Let's use it to get some more color-blind friendly palettes from 
 ```{r}
-devtools::install_github("JLSteenwyk/ggpubfigs")
+#devtools::install_github("JLSteenwyk/ggpubfigs")
 library(ggpubfigs)
 ```
 
+Let's plot Attack vs Defense for our mega pokemon
+```{r}
+megaAD <- ggplot(data = newdf, aes(x = attack, y = defense, color = meg)) + 
+  geom_point() +
+  labs(title = "TITLE",
+       x = "Attack (unitless pts)",
+       y = "Defense (unitless pts)",
+       color = "Evolution Type") +
+  theme_bw()
+megaAD
+
+# with ggpubfigs modification
+megaAD +
+  scale_color_manual(labels = c("Mega", "Regular"),
+                     values = friendly_pal("nickel_five")) + #from ggpubfigs
+  theme_black() + #from ggpubfigs
+  theme(legend.position = "right")
+  
+  
+```
+
+
 # ggsci
 ggsci has a variety of color pallates that can be used for giving your plots the color scheme of many scientific journals, TV shows, and movies.
+
+For example, if we wanted to visualize our plot with the Nature publishing colors...
+```{r}
+megaAD +
+  scale_color_npg(labels = c("Mega", "Regular")) #ggsci
+```
 
 These colors can be fun, but they are not necessarily color-blind friendly or good for printing, so they are not the best choice for all applications.
 
@@ -250,4 +449,5 @@ https://thatdatatho.com/grammar-of-graphics-ggplot2/
 https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
 https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html
 https://devtools.r-lib.org/index.html
-
+https://r-graph-gallery.com/
+https://forcats.tidyverse.org/
