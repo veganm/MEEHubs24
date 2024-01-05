@@ -420,7 +420,7 @@ hist(log10(pokemon$weight))
 ```
 
 *******************************************************************************************************************************************
-## Two continuous variables: Barplot
+## Continuous (numeric) data by category: Barplot
 Remember that we summarized our data earlier. Let's take a closer look at those summaries and see if we can observe any differences between groups. One easy way to do this is with a barplot:
 ```{r}
 ?barplot
