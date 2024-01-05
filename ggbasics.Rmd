@@ -60,7 +60,7 @@ View(pokemon)
 
 Likewise, we can choose to print a few rows and columns to the screen:
 ```{r}
-print(pokemon, n=10, width=6)
+print(pokemon)
 ```
 
 However, Tidyverse has given us some new tools that are worth trying out. The *glimpse()* function provided via package *dplyr* will show a transposed version of the data (columns run down the page, data runs across) along with the dimensions of the data and will try to show you as much of the data as possible:
