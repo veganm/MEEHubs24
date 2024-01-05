@@ -357,6 +357,39 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color)
 This is a very big plot! Click on "Show in new window" to get a closer look.
 
 ****************************************************************************************************************************************
+# Too Much Data!
+This data set is really big, and some of these groups are clearly quite small. Maybe we want to limit our analysis to groups that have a decent range (to avoid skewing the relationship between variables) and enough data points to be meaningful. A piori, let's say we want to keep groups that represent at least 70 pokemon, and for which there are attack values over most of the available range (50-150).
+```{r}
+pokemon_summary<-pokemon %>%
+  group_by(type_1) %>%
+  dplyr::summarize(n=n(),
+                   min_attack=min(attack),
+                   max_attack=max(attack))
+pokemon_summary
+```
+
+Let's find the pokemon for which this is true:
+```{r}
+pokemon_summary %>%
+  filter(n>=70 & min_attack <50 & max_attack >150)
+```
+
+We can filter our data set to include only pokemon of these four types for analysis. First we can get the types:
+```{r}
+vars<- pokemon_summary %>%
+  filter(n>=70 & min_attack <50 & max_attack >150) %>%
+  select(type_1)
+```
+
+Then we can filter:
+```{r}
+pokemon_f<-pokemon %>%
+  filter(
+  )
+```
+
+
+****************************************************************************************************************************************
 # Briefly, Some More Geometries
 
 ## One Quantitative Variable: Histograms, Densities, and Violins
