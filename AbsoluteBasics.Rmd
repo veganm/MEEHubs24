@@ -49,6 +49,16 @@ library(pokemon)
 
 *******************************************************************************************************************************************
 *******************************************************************************************************************************************
+# Functions in R
+Most things that we will do in R will involve calls to functions. A **function** is a piece of code that runs only when it is called and that performs a task when you call it. Many functions take inputs (external data or user-defined parameters) and return an object. Function calls look like this:
+
+> FunctionName(input1, input2, input3) # as many inputs as this function needs
+
+The libraries you install from CRAN have their own functions, which you can call once the library is installed and loaded into your workspace. 
+
+
+*******************************************************************************************************************************************
+*******************************************************************************************************************************************
 # Data Objects and Types in R
 Almost everything in R is some kind of *object*. A data object has a unique name (R is case sensitive - A1 and a1 are different objects) and contains a value or a set of values.
 
@@ -146,16 +156,6 @@ length(a1)
 length(a2)
 ```
 
-Values within a vector can be referred to by their *index* - the position that they occupy in the vector. When we put a (integer!) number in brackets [] next to a named object, that will retrieve the value stored in the object at the index in the brackets.
-```{r}
-a2[1]
-```
-
-Note that the first position in a R vector has index position 1, unlike some other languages that start indexing at 0:
-```{r}
-a2[0]
-```
-
 Vectors can contain any kind of data. The example above was a vector of numbers, but a vector can contain strings:
 ```{r}
 a3<-c("one", "two", "three")
@@ -167,6 +167,16 @@ a4<-c(TRUE, TRUE, FALSE)
 ```
  
 Look in the environment. Can you confirm the data type and contents for each of these vectors?
+
+Values within a vector can be referred to by their *index* - the position that they occupy in the vector. When we put a (integer!) number in brackets [] next to a named object, that will retrieve the value stored in the object at the index in the brackets.
+```{r}
+a2[1]
+```
+
+Note that the first position in a R vector has index position 1, unlike some other languages that start indexing at 0:
+```{r}
+a2[0]
+```
 
 Vectors can be used in operations as well. By default, R carries out *element-wise* operations.
 ```{r}
@@ -197,91 +207,6 @@ Type the operation you just created into the console (it should be underneath th
 Now, create a script (File -> New File -> R Script). Put the same operation into the script. Then, with your cursor on the line containing your operation, hit the *Run* button at the top right or use *Ctrl + Enter* on the keyboard to run the operation. How about now?
 
 
-*******************************************************************************************************************************************
-*******************************************************************************************************************************************
-# Functions in R
-Most things that we will do in R will involve calls to functions. A function is a piece of code that runs only when it is called and that performs a task when you call it. Many functions take inputs (external data or user-defined parameters) and return an object. Function calls look like this:
-
-> FunctionName(input1, input2, input3) # as many inputs as this function needs
-
-The libraries you install from CRAN have their own functions, which you can call once the library is installed and loaded into your workspace.
-
-To give you the idea of how this works, here's a very simple function that takes no inputs:
-```{r}
-my_function <- function(){ #Create a function with the name my_function
-  print("Hello World!") # the code to be executed is within the brackets
-}
-```
-
-Once the function exists, it can be called:
-```{r}
-my_function()
-```
-
-How about a function that takes an input?
-```{r}
-addto3<-function(addend){
-  new_value<-addend+3 # The operation to be performed
-  return(new_value)  # the object to be returned when the function is called
-  }
-```
-
-When we call this function, we must provide a numeric value for "addend":
-```{r}
-addto3(4.5)
-```
-
-We can save the returned value as a new object:
-```{r}
-a5<-addto3(4.5)
-a5
-```
-
-R is smart enough to return an error if you try to pass a non-numeric value to a function that carries out a numeric operation:
-```{r}
-addto3("apple")
-```
-
-But there are plenty of operations that can be done with character strings. One common operation is *concatenation*, which is carried out here by the *paste()* function. Let's see what this function does first, so we have the syntax:
-```{r}
-?paste
-```
-
-Now we can use this function as part of our own function:
-```{r}
-underscore_it<-function(text1, text2){
-  new_value<-paste(text1, "_", text2, sep="") # The operation to be performed
-  return(new_value)  # the object to be returned when the function is called
-  } # note that new_value only exists inside the function - check your environment, it isn't there!
-```
-
-This function uses a text-based operation and can therefore accept strings:
-```{r}
-underscore_it("apple", "banana")
-```
-Fun fact - since this function knows that the inputs are supposed to be characters, if you pass it numeric values, it'll convert numbers into text and concatenate them anyway:
-```{r}
-underscore_it(2, 8)
-```
-
-
-**EXAMPLE: You try it!** What do you think will happen if you pass a numeric vector to *addto3()*? In the empty code block below, create a new numeric vector as a named object. Pass this vector to the *addto3()* function, saving the output as a new object. Did this work as you expected?
-```{r}
-
-```
-
-
-In the empty code block below, create a function that carries out some other simple one-step arithmetic operation.
-```{r}
-
-```
-
-Call your new function and confirm that it works as expected.
-```{r}
-
-```
-
-
 
 *******************************************************************************************************************************************
 *******************************************************************************************************************************************
@@ -290,22 +215,10 @@ Many of the data sets we work with can be described as (or made to be) a kind of
 
 In R, we will build this data object as a *tibble*. You can think of a tibble as a kind of lazy data frame; when you make a tibble, it doesn't try to do much to make your data make sense, or to repair your data names. This is a good thing; you get to make more decisions about the contents of your own data. It does mean you have to be a bit careful about how you build.
 
-We can make a tibble out of almost anything. If we're lazy and don't name arguments, they get named with the expression used:
+We can make a tibble out of almost anything. If we're lazy and don't name the columns, they get named with the expression used to create each column:
 ```{r}
 tibble(a2, a2+10)
 ```
-
-If one of your inputs is a vector of length 1, it will be recycled as many times as needed to match the length of the tibble:
-```{r}
-tibble(a2, a1)
-```
-
-But tibbles are lazy - a vector of length 2 won't be recycled, even if it could be.
-```{r}
-a22<-c(2,2)
-tibble(a2, a22)
-```
-
 
 Tibbles can contain different data types, as long as the number of rows is the same. Each named column will have its own type.
 ```{r}
@@ -346,7 +259,7 @@ glimpse(pokemon)
 
 Likewise, we can choose to print a few rows and columns to the screen:
 ```{r}
-print(pokemon, n=10, width=6)
+print(pokemon)
 ```
 
 
@@ -372,33 +285,9 @@ Or the last 10:
 pokemon$pokemon[940:949]
 ```
 
-We can also treat the data frame as a matrix, using the name as a column identifier:
-```{r}
-pokemon[["pokemon"]][1:10]
-```
-
-or alternately, with row-column syntax:
-```{r}
-pokemon[,"pokemon"][1:10]
-```
-
-Oops. That didn't work. Why? The error code contains a clue:
-```{r}
-pokemon[,"pokemon"]
-```
-
-Since the row-column syntax returns a column (949 x 1), the easiest thing to do here is to *transpose* (flip) the Pokemon names so they have dimension (1 x 949), then take the first 10 entries:
-```{r}
-t(pokemon[,"pokemon"])[1:10]
-```
-
-Alternately alternately, we can use the fact that Pokemon names are in the second column:
-```{r}
-pokemon[[2]][1:10]
-t(pokemon[,2])[1:10]
-```
-
-We can also *pipe* these commands. Remember that the operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
+***************************************************************************************************************************************
+## Piping
+We can also *pipe* these commands, using the pipe operator from package **magrittr** in Tidyverse. The operator *%>%* "pipes" whatever is on the left-hand side of the "funnel" into the command(s) on the right-hand side. Putting a dot "." in front of the *$* operator here tells R to pass the value from the pipe into a specific location:
 ```{r}
 pokemon %>% .$pokemon[1:10]
 ```
@@ -422,7 +311,7 @@ We can see that some of the components of the data are *categories* (type_1, typ
 
 We need to start analyzing these data, but we don't even know what questions to ask yet, so we can begin by exploring the data. Maybe we should see if the averages of some of these measurements are different for different categories of Pokemon?
 
-The function *dplyr::summarize()* will let us do that easily.
+The function *dplyr::summarize()* (from package **dplyr** in Tidyverse) will let us do that easily.
 ```{r}
 ?dplyr::summarize
 #?dplyr::summarise #These are the same function - either spelling is fine
