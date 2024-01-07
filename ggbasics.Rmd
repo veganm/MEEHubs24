@@ -411,7 +411,7 @@ We can take a given gradient and run it backwards:
 ```{r}
 pAttackDefenseSmooth + scale_color_viridis_d(direction=-1)
 ```
-Viridis_c presents eight scales as options. Try them out! Remember that you can only have one color scale un-commented at a time.
+Viridis presents eight scales as options. Try them out! Remember that you can only have one color scale un-commented at a time.
 ```{r}
 pAttackDefenseSmooth +
   scale_color_viridis_d(option="turbo")
