@@ -1,0 +1,198 @@
+---
+title: "gg_options"
+output: html_notebook
+---
+
+**************************************************************************************************************************
+# Background
+In this session we will:
+* Review the basic parts and syntax of a ggplot call
+* Understand how ggplot expects input data to be organized
+* Learn how to create different kinds of plots by calling different geometries
+* Explore some of the basic design options that ggplot makes available to you
+
+Before we begin, make sure that you:
+* Have R and Rstudio installed (this code was written in 4.3.1 "Beagle Scouts" and 4.3.2 "Eye Holes")
+* Have a working directory set up for R
+* Know what a package is and how to install packages from CRAN
+* Understand the basics of how R creates and handles objects
+* Know what a function is in R
+* Know how to retrieve information from a data frame by name and index
+
+**************************************************************************************************************************
+# Getting Started
+First, let's install and load in the packages we will need to use. We will be working with *ggplot()* (package *ggplot2*) for plot creation, which along with the data manipulation tools that we will need today, is part of the R Tidyverse. We also want some extra plot manipulation ability from a package called *cowplot* and some extra color options from *RColorBrewer*. And, in case you didn't attend the Absolute Basics workshop, you will also need to get the Pokemon data set.
+```{r, echo=FALSE, message=FALSE, results='hide'}
+pacman::p_load(tidyverse, RColorBrewer, pokemon, colorspace, dichromat, remotes, cowplot, Hmisc)
+```
+
+**************************************************************************************************************************
+# Viewing The Data
+As before, we will be working with the pokemon data set:
+```{r}
+glimpse(pokemon)
+```
+
+**************************************************************************************************************************
+# Review: plotting With ggplot
+Recall that a basic ggplot call must contain specifications for:
+* **Data** (the name of the data frame that contains the data for plotting)
+* **Aesthetics** (aes; what is being mapped onto the x and y axes, as well as what information you want to use to determine the attributes such as color, shape, size, etc. of plot elements)
+* **Geometry** (what kind of plot - scatter, line, bar, histogram...) 
+
+Last time, we used ggplot to create some basic (and not so basic) scatter plots:
+```{r}
+ggplot(pokemon,  # the data
+       aes(attack, defense,  # x and y
+           color=type_1, # color points by type
+           shape=as.factor(generation_id)  # point shape indicates generation
+           )) +   
+  geom_point(alpha=0.8) # remember that alpha in [0,1] controls point opacity
+```
+
+****************************************************************************************************************************************
+# More Geometries
+
+## One Quantitative Variable: Histograms, Densities, and Violins
+Histograms are handy for showing distributions of a quantitative variable. Let's see how hit points (hp) are distributed overall:
+```{r}
+ggplot(pokemon, aes(hp)) +
+  geom_histogram(color="white", # outline color
+                 fill="darkgreen" # fill color
+                 )+
+  theme_classic()
+```
+
+As always, aesthetics can be informational. For example, we can see the distributions of hit points for Pokemon of different types:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_histogram(color="white", # outline color
+                 binwidth=10)+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+
+Densities also show distributions nicely. Since these data are converted to relative frequency within groups, it can be easier to compare densities than raw counts when the total number of data points is very different across groups.
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_density(color="grey")+
+  theme_classic()+
+  facet_wrap(~type_1)
+```
+This is a nice way to see the features in the data. But if we want to make comparisons across groups, we want to have the data that are being compared on a single plot. How can we do that?
+
+If you want to show distributions on top of each other, it can sometimes be effective to use densities if the number of groups isn't too large:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_density(color="grey", alpha=0.5)+ # and add some transparency
+  theme_classic()
+```
+
+This is honestly too many levels to show on top of each other in the same plot. A stacked histogram is another option, but this isn't easy to read either:
+```{r}
+ggplot(pokemon, aes(hp, fill=type_1)) +
+  geom_histogram(color="white", # outline color
+                 binwidth=10)+
+  theme_classic()
+```
+
+If we want to compare across groups, maybe we should show distributions of the quantitative variable side by side instead. A boxplot is one option:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_boxplot()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+A violin plot can also be attractive and informative, particularly for data like these that are not normally distributed:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+If the number of points in each category isn't too large, it is often recommended to over-plot the raw data:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+That didn't work. Geometries are deposited on the plot in order of appearance - if we want to see the data points AND have a color fill for the violins, we have to reverse the order:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
+  geom_violin()+
+  geom_jitter(width=0.2, size=0.5)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+Or we can remove the violin fill. Now we need to switch to *color* instead of *fill* so that the data points have the right colors:
+```{r}
+ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
+  geom_jitter(width=0.2, size=0.5)+
+  geom_violin(fill=NA)+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
+```
+
+
+## Bar Plots
+Bar plots can be used to summarize quantitative data over categories. We could do this manually by calculating the means and standard deviations of the data, saving those values in a new tibble, and plotting those data, or the *stat_summary()* function from **Hmisc** can make the plot for us:
+```{r}
+ggplot(data = pokemon, mapping = aes(x = type_1, y=hp, fill=type_1)) +
+  stat_summary(fun = "mean", geom = "col") + 
+  stat_summary(fun.data = mean_sdl, geom = "errorbar", width = .5, fun.args = list(mult = 1))+
+    theme(axis.text.x = element_text(angle=45, vjust=0.8))
+```
+
+Bar plots can also be used to show relationships between categories. For example, we might ask how egg types are distributed over different types of Pokemon:
+```{r}
+ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar() +  # Automatically counts the number of cases at each x position
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+```
+The raw counts are hard to read. We could put the counts next to each other:
+```{r}
+pEggDodge<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="dodge") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggDodge
+```
+
+but this plot is sprawling. Let's make a stacked plot of proportions instead:
+```{r}
+pEggStack<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
+    geom_bar(position="fill") +
+  theme(axis.text.x = element_text(angle=45, vjust=0.8))
+pEggStack
+```
+
+
+**EXERCISE:** Change the plot options in this section to figure out what they do. (It can be helpful to copy a line or block of code, comment out the original, then start making changes to the copy - this lets you keep the old code for reference while you are breaking the options.)
+```{r}
+
+```
+
+**EXERCISE: Now you try!** Pick two or three columns from the Pokemon data set and use the empty code block below to create your own plot of those data. What difference does it make when you move a color/shape aesthetic from the main call into the geometry call? What difference does it make when you have more than one geometry? 
+```{r}
+
+```
+
+
+
+# Resources
+https://www.kaggle.com/code/kitman0804/visualising-pokemon-stats-with-ggplot
+https://thatdatatho.com/selectively-place-text-in-ggplots-geom_text/
+https://thatdatatho.com/my-favourite-ggplot-plot-bar-chart-presentations/
+https://thatdatatho.com/grammar-of-graphics-ggplot2/
+https://thatdatatho.com/grammar-of-graphics-ggplot-tutorial-part2/
+https://thatdatatho.com/learning-the-tidyverse-basic-dplyr/
+https://rpubs.com/theairbend3r/ggplot-em-all-pokemon
+https://github.com/EmilHvitfeldt/r-color-palettes
+https://github.com/clauswilke/colorblindr
+https://cran.r-project.org/web/packages/colorspace/vignettes/colorspace.html
