@@ -447,6 +447,11 @@ By default, the  midpoint of the color scale is 0, but clearly that doesn't work
 pAttackVsSpeed +  
   scale_color_gradient2(low="blue", mid="violet", high="darkred", midpoint=85)
 ```
+We can also use Viridis here, but we need the continuous versions:
+```{r}
+pAttackVsSpeed +
+  scale_color_viridis_c()
+```
 
 
 
