@@ -58,11 +58,6 @@ Let's see what we're dealing with. Base R had a few options for looking at a dat
 View(pokemon)
 ```
 
-Likewise, we can choose to print a few rows and columns to the screen:
-```{r}
-print(pokemon)
-```
-
 However, Tidyverse has given us some new tools that are worth trying out. The *glimpse()* function provided via package *dplyr* will show a transposed version of the data (columns run down the page, data runs across) along with the dimensions of the data and will try to show you as much of the data as possible:
 ```{r}
 glimpse(pokemon)
@@ -116,10 +111,79 @@ OK, now the plot. Try changing these options!
 ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x,y) 
   geom_point(shape="square", size=0.5, color="red") # creates a scatter plot
 ```
+***************************************************************************************************************************************
+## Themes
+We don't have to stick with the basic design. In *ggplot*, you can specify *themes* that provide different defaults for plot structural elements like the plot background and axes. Let's try a few!
+```{r}
+# Un-comment one theme at a time by removing the hash tag at the start of the line.
+# Remember that you can only have one theme at a time, 
+# so be sure to put a hash tag in front of any themes you aren't using!
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_void()
+#  theme_minimal()
+#  theme_nothing()
+#  theme_grey()
+#  theme_dark()
+#  theme_light()
+#  theme_classic()
+#  theme_bw()
+```
+
+For information on a given theme, consult its help file:
+```{r}
+?theme_classic
+```
+
+
+**EXERCISE: Now you try!** Use the empty code block below to make a new scatter plot of your own. Try changing the shape, size, color, and/or transparency of the points, and try a few different themes. What options make the plot more or less legible?
+```{r}
+
+```
+
+
+****************************************************************************************************************************************
+## Theme Elements and Plot Labels
+We can control the size/position/color/etc of text, and change how different plot elements are labeled, with *theme()*. 
+```{r}
+?theme
+```
+
+
+Try changing some of these options!
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic() + # the classics never get old
+    theme(axis.text=element_text(size=14), 
+        axis.title=element_text(size=14, face="bold", color="blue"), 
+        plot.title=element_text(hjust=0.5, size=14)  # hjust to center the text
+        ) +
+  labs(title="Attack vs defense", y="Defense", x="Attack")
+```
+
+You can also remove text elements by making them blank:
+```{r}
+ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+  geom_point() +
+  theme_classic() + # the classics never get old
+    theme(axis.text=element_text(size=14), 
+        axis.title=element_blank(), 
+        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
+        ) +
+  labs(title="Attack vs defense", y="Defense", x="Attack")
+```
+
+
+**EXERCISE: Now you try!** Use the empty code block below to modify the themes and labels of your own plot. Play around with centering of different elements (using hjust and vjust), fonts, colors... 
+```{r}
+
+```
+
 
 ***************************************************************************************************************************************
 ## Informative Aesthetics By Group
-We can add informative aesthetics by using one or more of the *categorical variables* to divide the data into groups. For example, Pokemon are of different, unique types, and each row in the data set contains information on the primary type of the Pokemon that was measured:
+We can add informative aesthetics by using one or more of the other variables to divide the data into groups or otherwise label them according to their properties. For example, Pokemon are of different, unique types, and each row in the data set contains information on the primary type of the Pokemon that was measured:
 ```{r}
 unique(pokemon$type_1)
 ```
@@ -168,92 +232,7 @@ ggplot(pokemon,  # the data
   geom_point(alpha=0.8) # remember that alpha in [0,1] controls point opacity
 ```
 
-The plot now is so busy that R is warning us about our design! We'll have to simplify this plot so it's usable. But first, a few more design elements.
-
-****************************************************************************************************************************************
-## Themes
-We don't have to stick with the basic design. In *ggplot*, you can specify *themes* that provide different defaults for plot structural elements like the plot background and axes. Let's try a few!
-```{r}
-# Un-comment one theme at a time by removing the hash tag at the start of the line.
-# Remember that you can only have one theme at a time, 
-# so be sure to put a hash tag in front of any themes you aren't using!
-ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  theme_void()
-#  theme_minimal()
-#  theme_nothing()
-#  theme_grey()
-#  theme_dark()
-#  theme_light()
-#  theme_classic()
-#  theme_bw()
-```
-
-For information on a given theme, consult its help file:
-```{r}
-?theme_classic
-```
-
-
-**EXERCISE: Now you try!** Use the empty code block below to make a new scatter plot of your own. Use a different set of x and y components - what other pair(s) of numeric data might be interesting? Try changing the shape, size, color, and/or transparency of the points, and try a few different themes. What options make the plot more or less legible?
-```{r}
-
-```
-
-
-****************************************************************************************************************************************
-## Theme Elements and Plot Labels
-We can control the size/position/color/etc of text, and change how different plot elements are labeled, with *theme()*. 
-```{r}
-?theme
-```
-
-
-Try changing some of these options!
-```{r}
-ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  theme_classic() + # the classics never get old
-    theme(axis.text=element_text(size=14), 
-        axis.title=element_text(size=14, face="bold", color="blue"), 
-        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
-        legend.text=element_text(size=8),
-        legend.title=element_text(size=12)) +
-  labs(title="Attack vs defense", y="Defense", x="Attack", color="Type 1")
-```
-
-You can also remove text elements by making them blank:
-```{r}
-ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  theme_classic() + # the classics never get old
-    theme(axis.text=element_text(size=14), 
-        axis.title=element_text(size=14, face="bold"), 
-        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
-        legend.text=element_text(size=8),
-        legend.title=element_blank()   # removes the legend title
-        ) +
-  labs(title="Attack vs defense", y="Defense", x="Attack")
-```
-
-And remove elements entirely by setting *element.position = "none"*:
-```{r}
-ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
-  geom_point() +
-  theme_classic() + # the classics never get old
-    theme(axis.text=element_text(size=14), 
-        axis.title=element_text(size=14, face="bold"), 
-        plot.title=element_text(hjust=0.5, size=14),  # hjust to center the text
-        legend.text=element_text(size=14),
-        legend.position="none"             # no more legend!
-        ) +
-  labs(title="Attack vs defense", y="Defense", x="Attack")
-```
-
-**EXERCISE: Now you try!** Use the empty code block below to modify the themes and labels of your own plot. Play around with centering of different elements (using hjust and vjust), fonts, colors... 
-```{r}
-
-```
+The plot now is so busy that R is warning us about our design! We'll have to simplify this plot so it's usable. 
 
 
 
@@ -358,7 +337,9 @@ This is a very big plot! Click on "Show in new window" to get a closer look.
 
 ****************************************************************************************************************************************
 # Too Much Data!
-This data set is really big, and some of these groups are clearly quite small. Maybe we want to limit our analysis to groups that have a decent range (to avoid skewing the relationship between variables) and enough data points to be meaningful. A piori, let's say we want to keep groups that represent at least 70 pokemon, and for which there are attack values over most of the available range (50-150).
+This data set is really big, and some of these groups are clearly quite small. Maybe we want to limit our analysis to groups that have a decent range (to avoid skewing the relationship between variables) and enough data points to be meaningful. A priori, let's say we want to keep groups that represent at least 70 pokemon, and for which there are attack values over most of the available range (50-150).
+
+To make the code more readable, we're going to use the **pipe operator %>%** from a package called **magrittr**, which is part of the Tidyverse. We'll use a few more functions from the Tidyverse here as well. (We'll learn more about piping and data manipulation in tomorrow's workshops.)
 ```{r}
 pokemon_summary<-pokemon %>%
   group_by(type_1) %>%
@@ -368,179 +349,89 @@ pokemon_summary<-pokemon %>%
 pokemon_summary
 ```
 
-Let's find the pokemon for which this is true:
+Let's find the pokemon types for which this is true:
 ```{r}
 pokemon_summary %>%
   filter(n>=70 & min_attack <50 & max_attack >150)
 ```
 
-We can filter our data set to include only pokemon of these four types for analysis. First we can get the types:
+We can filter our data set to include only pokemon of these four types for analysis. First we can get the types (check the environment to see the list):
 ```{r}
 vars<- pokemon_summary %>%
   filter(n>=70 & min_attack <50 & max_attack >150) %>%
-  select(type_1)
+  pull(type_1)
 ```
 
 Then we can filter:
 ```{r}
-pokemon_f<-pokemon %>%
-  filter(
-  )
+pokemon_filtered<-pokemon %>%
+  filter(type_1 %in% vars)
+glimpse(pokemon_filtered)
 ```
 
-
-****************************************************************************************************************************************
-# Briefly, Some More Geometries
-
-## One Quantitative Variable: Histograms, Densities, and Violins
-Histograms are handy for showing distributions of a quantitative variable. Let's see how hit points (hp) are distributed overall:
+We can double check to make sure our filter worked correctly:
 ```{r}
-ggplot(pokemon, aes(hp)) +
-  geom_histogram(color="white", # outline color
-                 fill="darkgreen" # fill color
-                 )+
-  theme_classic()
+unique(pokemon_filtered$type_1)
 ```
-
-As always, aesthetics can be informational. For example, we can see the distributions of hit points for Pokemon of different types:
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_histogram(color="white", # outline color
-                 binwidth=10)+
-  theme_classic()+
-  facet_wrap(~type_1)
-```
-
-Densities also show distributions nicely. Since these data are converted to relative frequency within groups, it can be easier to compare densities than raw counts when the total number of data points is very different across groups.
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_density(color="grey")+
-  theme_classic()+
-  facet_wrap(~type_1)
-```
-This is a nice way to see the features in the data. But if we want to make comparisons across groups, we want to have the data that are being compared on a single plot. How can we do that?
-
-If you want to show distributions on top of each other, it can sometimes be effective to use densities if the number of groups isn't too large:
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_density(color="grey", alpha=0.5)+ # and add some transparency
-  theme_classic()
-```
-
-This is honestly too many levels to show on top of each other in the same plot. A stacked histogram is another option, but this isn't easy to read either:
-```{r}
-ggplot(pokemon, aes(hp, fill=type_1)) +
-  geom_histogram(color="white", # outline color
-                 binwidth=10)+
-  theme_classic()
-```
-
-If we want to compare across groups, maybe we should show distributions of the quantitative variable side by side instead. A boxplot is one option:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_boxplot()+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-
-A violin plot can also be attractive and informative, particularly for data like these that are not normally distributed:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_violin()+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-
-If the number of points in each category isn't too large, it is often recommended to over-plot the raw data:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_jitter(width=0.2, size=0.5)+
-  geom_violin()+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-That didn't work. Geometries are deposited on the plot in order of appearance - if we want to see the data points AND have a color fill for the violins, we have to reverse the order:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, fill=type_1)) +
-  geom_violin()+
-  geom_jitter(width=0.2, size=0.5)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-Or we can remove the violin fill. Now we need to switch to *color* instead of *fill* so that the data points have the right colors:
-```{r}
-ggplot(pokemon, aes(y=hp, x=type_1, color=type_1)) +
-  geom_jitter(width=0.2, size=0.5)+
-  geom_violin(fill=NA)+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle=45, vjust = 0.6))
-```
-
-
-## Bar Plots
-Bar plots can be used to summarize quantitative data over categories. We could do this manually by calculating the means and standard deviations of the data, saving those values in a new tibble, and plotting those data, or the *stat_summary()* function from **Hmisc** can make the plot for us:
-```{r}
-ggplot(data = pokemon, mapping = aes(x = type_1, y=hp, fill=type_1)) +
-  stat_summary(fun = "mean", geom = "col") + 
-  stat_summary(fun.data = mean_sdl, geom = "errorbar", width = .5, fun.args = list(mult = 1))+
-    theme(axis.text.x = element_text(angle=45, vjust=0.8))
-```
-
-Bar plots can also be used to show relationships between categories. For example, we might ask how egg types are distributed over different types of Pokemon:
-```{r}
-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar() +  # Automatically counts the number of cases at each x position
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
-```
-The raw counts are hard to read. We could put the counts next to each other:
-```{r}
-pEggDodge<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar(position="dodge") +
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
-pEggDodge
-```
-
-but this plot is sprawling. Let's make a stacked plot of proportions instead:
-```{r}
-pEggStack<-ggplot(data = pokemon, mapping = aes(x = type_1, fill = egg_group_1)) +
-    geom_bar(position="fill") +
-  theme(axis.text.x = element_text(angle=45, vjust=0.8))
-pEggStack
-```
-
-
-**EXERCISE:** Change the plot options in this section to figure out what they do. (It can be helpful to copy a line or block of code, comment out the original, then start making changes to the copy - this lets you keep the old code for reference while you are breaking the options.)
-```{r}
-
-```
-
-**EXERCISE: Now you try!** Pick two or three columns from the Pokemon data set and use the empty code block below to create your own plot of those data. What difference does it make when you move a color/shape aesthetic from the main call into the geometry call? What difference does it make when you have more than one geometry? 
-```{r}
-
-```
-
 
 
 ****************************************************************************************************************************************
 **************************************************************************************************************************
 # Fine-Tuning the Aesthetics: Color Scales and Palettes
-Next, let's see if there is any relationship between attack/defense components and speed. 
-
-(Notice that we are saving the plot as an object now; see if you can find it in your environment. What is contained in a *ggplot* object? )
+Let's re-make a scatter plot with the reduced data. (Notice that we are saving the plot as an object now; see if you can find it in your environment. What is contained in a *ggplot* object? )
 ```{r}
-pAttackVsSpeed <- ggplot(pokemon, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
+xTextSize=14  # easiest to make baseline plot font size a parameter
+
+pAttackDefenseSmooth<-ggplot(pokemon_filtered, aes(attack, defense, color=as.factor(type_1))) + 
+  geom_point() +
+  geom_smooth() +  # Produces a smoothed line showing data trends
+  theme_classic() + # the classics never get old
+      theme(axis.text=element_text(size=xTextSize), 
+        axis.title=element_text(size=xTextSize + 1, face="bold"), 
+        plot.title=element_text(hjust=0.5, size=xTextSize +2),  # hjust to center the text
+        legend.text=element_text(size=xTextSize),
+        legend.title = element_text(size=xTextSize)
+        ) +
+  labs(title="Attack vs defense", y="Defense", x="Attack", color="Type")
+
+pAttackDefenseSmooth
+```
+
+
+Better, but the default colors aren't great. What else can we do? Since we are trying to color the points according to a discrete (categorical) variable, we need a discrete color scale.
+
+We'll start with the plot we just saved; once we have saved a plot, we can add new options to it exactly as if it were one continuous *ggplot()* call.
+
+The easiest thing to do is to use a pre-made color scale. The Viridis scales are perceptually uniform in both colour and black-and-white display, designed to be color-blind accessible, and are better options than the defaults. Here we will call in the basic Viridis discrete scale:
+
+```{r}
+pAttackDefenseSmooth + scale_color_viridis_d()
+```
+We can take a given gradient and run it backwards:
+```{r}
+pAttackDefenseSmooth + scale_color_viridis_d(direction=-1)
+```
+Viridis_c presents eight scales as options. Try them out! Remember that you can only have one color scale un-commented at a time.
+```{r}
+pAttackDefenseSmooth +
+  scale_color_viridis_d(option="turbo")
+#  scale_color_viridis_d(option="mako")
+#  scale_color_viridis_d(option="rocket")
+#  scale_color_viridis_d(option="cividis")
+#  scale_color_viridis_d(option="viridis")
+#  scale_color_viridis_d(option="plasma")
+#  scale_color_viridis_d(option="inferno")
+#  scale_color_viridis_d(option="magma")
+```
+
+We can do the same thing if we want to label the data by a continuous variable. For example, let's use the reduced data set to see if there is any relationship between attack/defense components and speed. 
+```{r}
+pAttackVsSpeed <- ggplot(pokemon_filtered, aes(attack, defense, color=speed)) +  # data + aesthetics (x, y, point color) 
   geom_point()
 pAttackVsSpeed
 ```
 
-
-Maybe, but it's hard to see like this. We don't have to use the default colors - in fact, we probably shouldn't.
-
 Since we are trying to color the points according to a numeric (continuous) variable, we need a *continuous color scale*. We can do this with a custom *color gradient*. 
-We'll start with the plot we just saved; once we have saved a plot, we can add new options to it exactly as if it were one continuous *ggplot()* call.
 ```{r}
 pAttackVsSpeed + scale_color_gradient(low="blue", high="darkorange")
 ```
@@ -557,26 +448,7 @@ pAttackVsSpeed +
   scale_color_gradient2(low="blue", mid="violet", high="darkred", midpoint=85)
 ```
 
-Or we can specify a pre-made continuous color scale (here, the Viridis continuous scale, which is perceptually uniform in both colour and black-and-white display, is an easy option to ensure good perceptive properties of your visulizations):
-```{r}
-pAttackVsSpeed + scale_color_viridis_c()
-```
-We can take a given gradient and run it backwards:
-```{r}
-pAttackVsSpeed + scale_color_viridis_c(direction=-1)
-```
-Viridis_c presents eight scales as options:
-```{r}
-pAttackVsSpeed +
-  scale_color_viridis_c(option="turbo")
-#  scale_color_viridis_c(option="mako")
-#  scale_color_viridis_c(option="rocket")
-#  scale_color_viridis_c(option="cividis")
-#  scale_color_viridis_c(option="viridis")
-#  scale_color_viridis_c(option="plasma")
-#  scale_color_viridis_c(option="inferno")
-#  scale_color_viridis_c(option="magma")
-```
+
 
 ## Custom Color Scales with ColorBrewer
 ColorBrewer provides discrete color schemes. The *brewer* palettes can be found on the help page:
@@ -592,44 +464,34 @@ pAttackVsSpeed + scale_color_distiller(palette="Set3")
 pAttackVsSpeed + scale_color_distiller(palette="PuBuGn")
 ```
 
-
-Since these scales are designed to be discrete, let's generate a plot that uses discrete (categorical) data. Earlier, we made a plot to show how egg types are distributed over different types of Pokemon:
+Let's use ColorBrewer to access some new options for our attack vs defense plot.
 ```{r}
-pEggStack
+pAttackDefenseSmooth + scale_color_brewer()
 ```
 
-Discrete categories do work better with discrete scales, but the default colors are fairly unpleasant. Let's use ColorBrewer to access some new options.
+We can change the color palette to get colors that are easier to see:
 ```{r}
-pEggStack + scale_color_brewer()
+pAttackDefenseSmooth + scale_color_brewer(palette="Dark2")
 ```
 
-Why didn't that work?
-```{r}
-pEggStack + scale_fill_brewer(palette="Dark2")
-```
-
-Now we got our colors, but the data have too many levels! What do?
-
-Well, for one, we can define our own color palette. There are 15 egg groups, so we need 15 colors. We can pick them manually (by name or by hex code) or generate them from a pre-existing palette:
+Or we can define our own color palette. There are four types, so we need four colors. We can pick them manually (by name or by hex code) or generate them from a pre-existing palette:
 ```{r}
 ?palettes
 ```
 
 ```{r}
-colvec<-c("red", "orangered2", "orange3", "orange2", "yellow2", 
-          "olivedrab1", "lightgreen", "green", "green4", "mediumturquoise",
-          "paleturquoise2", "dodgerblue", "dodgerblue4", "mediumpurple", "mediumvioletred")
-colvec_rainbow<-rainbow(length(unique(pokemon$egg_group_1)), s=1, v=1)          # When you need a number of items to match data dimensions,
-colvec_hcl<-hcl.colors(length(unique(pokemon$egg_group_1)), palette="viridis")  # it's best to ask the data directly!
-colvec_heat<-heat.colors(length(unique(pokemon$egg_group_1)))                 
+colvec<-c("red", "orange3", "green4", "mediumpurple")
+colvec_rainbow<-rainbow(length(unique(pokemon_filtered$type_1)), s=1, v=1)          # When you need a number of items to match data dimensions,
+colvec_hcl<-hcl.colors(length(unique(pokemon_filtered$type_1)), palette="viridis")  # it's best to ask the data directly!
+colvec_heat<-heat.colors(length(unique(pokemon_filtered$type_1)))                 
 ```
 
-Now we can use any of these to fill. This is a big plot; open it in a new window. 
+Now we can use any of these to color. This is a big plot; open it in a new window. 
 ```{r}
-p1<-pEggStack + scale_fill_manual(values=colvec, guide=guide_legend(ncol=2))
-p2<-pEggStack + scale_fill_manual(values=colvec_rainbow, guide=guide_legend(ncol=2))
-p3<-pEggStack + scale_fill_manual(values=colvec_hcl, guide=guide_legend(ncol=2))
-p4<-pEggStack + scale_fill_manual(values=colvec_heat, guide=guide_legend(ncol=2))
+p1<-pAttackDefenseSmooth + scale_color_manual(values=colvec)
+p2<-pAttackDefenseSmooth + scale_color_manual(values=colvec_rainbow)
+p3<-pAttackDefenseSmooth + scale_color_manual(values=colvec_hcl)
+p4<-pAttackDefenseSmooth + scale_color_manual(values=colvec_heat)
 p5<-plot_grid(p1, p2, p3, p4, ncol=2)
 p5
 ```
