@@ -188,7 +188,7 @@ We can add informative aesthetics by using one or more of the other variables to
 unique(pokemon$type_1)
 ```
 
-Maybe the relationship between attach and defense is different across types?
+Maybe the relationship between attack and defense is different across types?
 
 We can use this information to color each point according to the type of the Pokemon:
 ```{r}
