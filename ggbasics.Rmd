@@ -285,7 +285,7 @@ Now there is a single smoothed fit line. *geom_smooth()* only has the x/y aesthe
 
 What if we put the color aesthetic into the *geom_smooth* function?
 ```{r}
-ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color) 
+ggplot(pokemon, aes(attack, defense)) +
   geom_point() +
   geom_smooth(aes(color=as.factor(generation_id))) +  # Produces a smoothed line showing data trends
   theme_classic() 
@@ -293,11 +293,11 @@ ggplot(pokemon, aes(attack, defense)) +  # data + aesthetics (x, y, point color)
 
 Same thing. When we specify the color aesthetic in the "boss" call to *ggplot*, all of the geometries can use it (unless we tell them not to). If we specify an aesthetic in only one element, only that element gets to use it.
 
-*ggplot* will let you **overwrite** aesthetics, which comes in handy if you do have more than one layer of elements in a plot. For example, if we want to force all of the smoothed lines to be the same color, we can easily do so by giving the *geom_smooth* a local value for color. This will replace the global color scheme based on generation, only within the smoothed-lines layer.
+*ggplot* will let you **overwrite** aesthetics, which comes in handy if you do have more than one layer of elements in a plot. For example, if we want to force the smoothed line to the entire data set rather than to the data for Pokemon of each generation, we can easily do so by giving the *geom_smooth* a local value for color. This will replace the global color scheme based on generation, only within the smoothed-lines layer.
 ```{r}
-ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +  # data + aesthetics (x, y, point color) 
+ggplot(pokemon, aes(attack, defense, color=as.factor(generation_id))) +
   geom_point() +
-  geom_smooth(aes(group=1)) +  # Produces a smoothed line showing data trends
+  geom_smooth(color="black") +  # Produces a smoothed line showing data trends
   theme_classic() # the classics never get old
 ```
 
