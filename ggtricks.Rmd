@@ -12,7 +12,7 @@ This workshop assumes that you:
 
 Before we begin, we'll need to install and load the packages we'll be working with from CRAN:
 ```{r}
-pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra, ggsci, devtools, rstatix)
+pacman::p_load(tidyverse, pokemon, cowplot, ggpubr, gridExtra, ggsci, devtools, rstatix, patchwork)
 ```
 
 If you attended the prior workshops, you've already been introduced to Tidyverse and the pokemon data set. We'll also be working with some packages that add new functionality to the ggverse:
@@ -33,7 +33,7 @@ ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y
 ```
 
 Most of the functionality here is for creation of multipanel plots.
-There are a couple of options here: cowplot and gridExtra
+There are a couple of options here: cowplot, gridExtra, and a newer package called patchwork.
 ```{r}
 # Save each ggplot as an object
 p1 <- ggplot(pokemon, aes(attack, defense, color=type_1)) +  # data + aesthetics (x, y, point color) 
@@ -129,9 +129,20 @@ legend
 plot_grid(prow, legend, nrow = 2,
           rel_heights = c(6, 1))
 ```
+Patchwork is designed to do many of the same things we have just done, but more concisely:
+```{r}
+p1+p2 # side by side plots
+```
+We can re-orient the plots:
+```{r}
+p1/p2 # plots on top of each other
+```
+Legend manipulation is likewise straightforward:
+```{r}
+p1 / p2 + plot_layout(guides = 'collect')
+```
 
-
-How would you change the attack vs. defense plot for the different generations
+You try it! How would you change the attack vs. defense plot for the different generations
 (depending on what question you were asking)
 ```{r}
 
@@ -199,11 +210,32 @@ pokemon %>%
   select(pokemon:height)
 ```
 
+
 We can filter a tibble, retaining only the rows that satisfy a given condition:
 ```{r}
 pokemon %>%
   filter(weight > 25)
 ```
+
+or more than one condition at the same time:
+```{r}
+pokemon %>%
+  filter(weight > 25 & height >1.5) #and
+```
+
+or at least one of a set of conditions (look at the size of the result and compare with previous results):
+```{r}
+pokemon %>%
+  filter(weight > 25 | height > 1) #or
+```
+
+or a list of conditions:
+```{r}
+vars<-c("dragon", "bug")
+pokemon %>%
+  filter(type_1 %in% vars)
+```
+
 
 There's more functionality available here (lots more!) but these are some of the most useful basic operations to have when handling tibbles.
 
@@ -211,9 +243,9 @@ There's more functionality available here (lots more!) but these are some of the
 
 # More data manipulation tricks
 
-Sometimes after plotting, may realize that you want to manipulate the data some more to make different plots.
+Sometimes after plotting, you may realize that you want to manipulate the data some more to make different plots.
 
-First, let's look at it.
+First, let's look at the data frame directly.
 
 We can use the View() command, or click on it in the environment panel.
 
@@ -273,6 +305,11 @@ glimpse(lj)
 
 
 ***Exercise: What happens if we use the other types of join?***
+```{r}
+?left_join
+```
+
+
 How do we know we ran the correct one? (hint: check the number of rows in the df)
 ```{r}
 
@@ -321,9 +358,7 @@ newdf %>%
   shapiro_test(defense)
 ```
 
-The attack data is normally distributed, but the defense data is not.
-Let's use non-parametric tests for both **ask workshop test run about this**
-(***also ask workshop about variance test***)
+The attack data is normally distributed, but the defense data is not. Let's use non-parametric tests for both.
 
 Looking at the data, let's do a one-sided Wilcoxon signed rank test, where our null hypothesis is that attack and defense are unchanged for mega evolutions, and our alternate hypothesis is that mega evolutions have higher attack and defense than their normal evolution.
 
@@ -429,15 +464,37 @@ megaAD +
 
 
 # ggsci
-ggsci has a variety of color pallates that can be used for giving your plots the color scheme of many scientific journals, TV shows, and movies.
+ggsci has a variety of color palettes that can be used for giving your plots the color scheme of many scientific journals, TV shows, and movies.
 
 For example, if we wanted to visualize our plot with the Nature publishing colors...
 ```{r}
-megaAD +
+pmega_npg<-megaAD +
   scale_color_npg(labels = c("Mega", "Regular")) #ggsci
+pmega_npg
 ```
 
 These colors can be fun, but they are not necessarily color-blind friendly or good for printing, so they are not the best choice for all applications.
+
+Remember from yesterday that we can use **colorblindr** to check how a plot will look to a color-blind viewer. This package currently depends on the development versions of **cowplot** and **colorspace**, so let's install those first:
+```{r, message=FALSE, echo=FALSE, results='hide'}
+remotes::install_github("wilkelab/cowplot")
+install.packages("colorspace", repos = "http://R-Forge.R-project.org")
+```
+
+Then we can install **colorblindr** from repository:
+```{r, message=FALSE, echo=FALSE, results='hide'}
+remotes::install_github("clauswilke/colorblindr")
+```
+
+Once the package is installed, load it in:
+```{r}
+library(colorblindr)
+```
+and check the plot:
+```{r}
+cvd_grid(pmega_npg)
+```
+
 
 
 # Resources
@@ -451,3 +508,4 @@ https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html
 https://devtools.r-lib.org/index.html
 https://r-graph-gallery.com/
 https://forcats.tidyverse.org/
+https://patchwork.data-imaginist.com/
