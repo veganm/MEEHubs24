@@ -27,6 +27,9 @@ gg_basics
 * The wide wide world of color in R: Color palettes in RColorBrewer and beyond
 * Testing palettes and plots under color-blindness and grey-scale
 
+gg_options
+* A showcase of options for different geometries, for use as a companion to gg_basics
+
 gg_tricks
 * Adding functionality to ggplot with cowplot, gridExtra, patchwork, and ggpubr
 * More data manipulation with dplyr
