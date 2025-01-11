@@ -9,7 +9,7 @@ Code repository for R workshops at MEEHubs24 ATL
 
 *Well, I have to run to a meeting. Good luck!*
 
-In these workshops, participants will take on the role of a Pokemon researcher as we learn to interrogate data sets in R. By the end of the series, participants will be able to manipulate and reshape data objects, explore data visualizations using an arsenal of tools from packages on CRAN and GitHub, and create pubication-quality plots to answer data-based research questions in R. As a bonus, we will learn a few new things about the ecology and evolution of Pokemon along the way.
+In these workshops, participants will take on the role of a Pokemon researcher as we learn to interrogate data sets in R. By the end of the series, participants will be able to manipulate and reshape data objects, explore data visualizations using an arsenal of tools from packages on CRAN and GitHub, and create publication-quality plots to answer data-based research questions in R. As a bonus, we will learn a few new things about the ecology and evolution of Pokemon along the way.
 
 Absolute Basics
 * Fundamentals of objects and data typing in R
